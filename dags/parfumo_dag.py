@@ -298,17 +298,17 @@ def crawling_perfume_chart_review():
 
 def upload_raw_files_to_s3(bucket_name: str) -> None:
     hook = S3Hook(aws_conn_id="aws_s3")
-    src_path = os.path.join(DOWNLOADS_DIR, f'spotify/charts/{NOW_DATE}/*.csv')
+    perfume_product_src_path = os.path.join(DOWNLOADS_DIR, f'perfume_product/{NOW_DATE}')
+    perfume_detail_src_path = os.path.join(DOWNLOADS_DIR, f'perfume_detail/{NOW_DATE}')
+    review_src_path = os.path.join(DOWNLOADS_DIR, f'review/{NOW_DATE}')
 
-    filenames = glob.glob(src_path)
-    logging.info(filenames[0])
-
-    for filename in filenames:
-        key = filename.replace(DOWNLOADS_DIR, '')     
-        key = os.path.join('downloads', key[1:])    #s3 경로에 맞게 경로명 수정
-        hook.load_file(filename=filename, key=key, replace = True, bucket_name=bucket_name)
-
-
+    src_paths = [perfume_product_src_path, perfume_detail_src_path, review_src_path]
+    for src_path in src_paths:
+        src_files = glob.glob(os.path.join(src_path, '*.json'))
+        for src_file in src_files:
+            key = src_file.replace(DOWNLOADS_DIR, '')     
+            key = os.path.join('downloads', key[1:])    #s3 경로에 맞게 경로명 수정
+            hook.load_file(filename=src_file, key=key, replace=True, bucket_name=bucket_name)
 
 
 with DAG(dag_id="spotify_chart_to_s3",

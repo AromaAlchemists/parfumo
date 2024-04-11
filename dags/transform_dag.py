@@ -193,3 +193,79 @@ def transform_perfume():
     dst_path = os.path.join(dst_dir_path, f'{NOW_DATE}_perfume.csv')
 
     transform_df.to_csv(dst_path, encoding='utf-8-sig',index=False)
+
+
+def upload_transform_files_to_s3(bucket_name: str) -> None:
+    hook = S3Hook(aws_conn_id="aws_s3")
+    accord_src_path = os.path.join(TRANSFORM_DIR, f'perfume_product/{NOW_DATE}')
+    chart_src_path = os.path.join(TRANSFORM_DIR, f'perfume_detail/{NOW_DATE}')
+    chart__feature_src_path = os.path.join(TRANSFORM_DIR, f'review/{NOW_DATE}')
+    note_src_path = os.path.join(TRANSFORM_DIR, f'review/{NOW_DATE}')
+    review_src_path = os.path.join(TRANSFORM_DIR, f'review/{NOW_DATE}')
+
+    src_paths = [accord_src_path, chart_src_path, chart__feature_src_path, note_src_path, review_src_path]
+    for src_path in src_paths:
+        src_files = glob.glob(os.path.join(src_path, '*.json'))
+        for src_file in src_files:
+            key = src_file.replace(TRANSFORM_DIR, '')     
+            key = os.path.join('transform', key[1:])    #s3 경로에 맞게 경로명 수정
+            hook.load_file(filename=src_file, key=key, replace=True, bucket_name=bucket_name)
+
+
+
+
+with DAG(dag_id="spotify_chart_to_s3",
+         schedule_interval="@daily",
+         start_date=datetime(2024, 1, 1),
+         catchup=False) :
+    
+    start_task = EmptyOperator(
+        task_id="start_task"
+    )
+
+    transform_chart_task = PythonOperator(
+        task_id = "transform_chart_task",
+        python_callable=transform_chart
+    )
+
+    transform_chart_feature_task = PythonOperator(
+        task_id = "transform_chart_feature_task",
+        python_callable=transform_chart_feature
+    )
+
+    transform_notes_task = PythonOperator(
+        task_id = "transform_notes_task",
+        python_callable=transform_notes
+    )
+    
+    transform_rating_task = PythonOperator(
+        task_id = "transform_rating_task",
+        python_callable=transform_rating
+    )
+
+    transform_accord_task = PythonOperator(
+        task_id = "transform_accord_task",
+        python_callable=transform_accord
+    )
+
+    transform_perfume_task = PythonOperator(
+        task_id = "transform_perfume_task",
+        python_callable=transform_perfume
+    )
+
+    
+    upload_transform_files_to_s3_task = PythonOperator(
+        task_id = "upload_transform_files_to_s3_task",
+        python_callable= upload_transform_files_to_s3,
+        op_kwargs= {
+            "bucket_name": BUCKET_NAME
+        }
+    )
+
+    end_task = EmptyOperator(
+        task_id = "end_task"
+    )
+
+    start_task >> transform_chart_task >> transform_chart_feature_task >> transform_notes_task >> transform_rating_task
+    
+    transform_rating_task >> transform_accord_task >> transform_perfume_task >> upload_transform_files_to_s3_task >> end_task
