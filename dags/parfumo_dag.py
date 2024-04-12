@@ -239,17 +239,22 @@ def crawling_perfume_chart_review():
     driver = webdriver.Chrome()
     driver.maximize_window()
 
-    for url_count, url in enumerate(url_list[:5]):
+    for url_count, url in enumerate(url_list):
         driver.get(url)
         time.sleep(2)
+        #print(url_count)
         try : 
             review_number = int(driver.find_element(By.XPATH, '/html/body/div[5]/div/div[1]/nav/div[2]/span').text)
+
+            #print(":21")
             for i in range(review_number//5):
                 driver.execute_script('document.querySelector("#reviews_holder > div.w-100.text-center > span").click()')
+                #print("!")
                 time. sleep ( 1 )
             #more review 버튼 클릭
             elements = driver.find_elements(By.CLASS_NAME, 
                                     'pointer.review-hover')
+            #print(":1")
             
             for element in elements :
                     #element = driver.find_element(By.CLASS_NAME, 
@@ -259,26 +264,32 @@ def crawling_perfume_chart_review():
                     #print("1")
                     # 찾은 모든 요소에 대해 반복하여 클릭
             
+            #print("22:1")
             title_1 = driver.find_elements(By.XPATH, '//div[@itemprop="reviewBody"]')
             review_list = []
+            #print(":1222")
             for title in title_1 :
                 review_list.append(title.text)
-            print(review_list)
+            #print(review_list)
             
             total_review.append(review_list)
         except :
             total_review.append("")
-        
+        print("finish review")
         ####################
         try : 
+            element = driver.find_element(By.ID, "edit_classification")
+            # 해당 요소로 스크롤하기
+            driver.execute_script("arguments[0].scrollIntoView();", element)
+            time.sleep(5)
+            
             element = driver.find_element(By.ID, "chartdiv1")
             # 해당 요소로 스크롤하기
             driver.execute_script("arguments[0].scrollIntoView();", element)
-            time.sleep(3)
             ####################
             chart_counts = driver.find_elements(By.CLASS_NAME, 'col.mb-2')
             
-            time.sleep(3)
+            #time.sleep(3)
             
             for count in chart_counts :   
                 #print(chart_counts.text)
@@ -290,9 +301,42 @@ def crawling_perfume_chart_review():
                     #print(feature, " : ", pattern.search(num).group())
                     if feature in df.columns:
                         df[feature] = df[feature].astype(object)  # 형 변환을 방지하기 위해 object로 설정
-                        df.loc[url_count, feature] = percentage       
+                        df.loc[url_count, feature] = percentage
+                        print("in~")
+            ####################         
         except :
-            pass
+            found = False
+            attempts = 0
+            while not found and attempts < 20:  # 최대 20번 시도
+                # 페이지를 조금씩 아래로 스크롤
+                driver.execute_script("window.scrollBy(0, 400);")  # 매 반복마다 400픽셀 아래로 스크롤
+                time.sleep(5)  # 로딩 시간 대기
+
+                # 특정 요소가 로드되었는지 확인
+                try:
+                    element = driver.find_element(By.ID, "edit_classification")  # ID를 통해 요소 찾기
+                    driver.execute_script("arguments[0].scrollIntoView();", element)  # 요소가 보이면 스크롤
+                    print("Element found and scrolled into view")
+                    found = True
+                    chart_counts = driver.find_elements(By.CLASS_NAME, 'col.mb-2')
+            
+                    time.sleep(3)
+
+                    for count in chart_counts :   
+                        #print(chart_counts.text)
+                        items = count.text.split("\n")
+                        for item in items :
+                            #print(item)
+                            feature, num = item.split(maxsplit=1)
+                            percentage = pattern.search(num).group()
+                            #print(feature, " : ", pattern.search(num).group())
+                            if feature in df.columns:
+                                df[feature] = df[feature].astype(object)  # 형 변환을 방지하기 위해 object로 설정
+                                df.loc[url_count, feature] = percentage
+                                print("in~")
+                except :
+                    attempts += 1
+                    print("Element not found, scrolling more...")
 
 
 
