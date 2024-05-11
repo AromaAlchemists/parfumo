@@ -19,36 +19,39 @@ import json
 from utils.constant_util import *
 
 # 항상 transform은 크롤링 완성본인 review 파일로 진행
-
+def concat_csv():
+    concat_df = pd.DataFrame()
+    for year in [2020,2021]:
+        file_path = os.path.join(DOWNLOADS_DIR, f'chart/{NOW_DATE}/{year}/*.csv')
+        filename = glob.glob(file_path)
+        df = pd.read_csv(filename[0])
+        concat_df = pd.concat([concat_df,df])
+    concat_df.insert(0, 'perfume_id', range(1, len(concat_df) + 1))
+    return concat_df
 
 def transform_chart():
-    file_path = os.path.join(DOWNLOADS_DIR, f'chart/{NOW_DATE}')
-    filename = glob.glob(os.path.join(file_path,'*.csv'))
-    df = pd.read_csv(filename[0])
-    df.insert(0, 'perfume_id', range(1, len(df) + 1))
+    df = concat_csv()
     df = df[['perfume_id','Type','Occasion','Season','Audience']].T
 
-    dic = {column : [] for column in ['perfume_id','name','vote']}
+    columns = ['perfume_id','name','vote']
+    dic = {column : [] for column in columns}
     for i in range(len(df.columns)):
         dic['vote'] += df.iloc[1:,i].tolist()
         dic['perfume_id'] += [df.iloc[0,i]] * 4
     dic['name'] = list(df.index)[1:] * len(df.columns)
 
-    transform_df = pd.DataFrame(dic)
+    transform_df = pd.DataFrame(dic)  
     transform_df.insert(0, 'chart_id', range(1, len(transform_df) + 1))
-    
+
     dst_dir_path =  os.path.join(TRANSFORM_DIR, f'chart/{NOW_DATE}')
     os.makedirs(dst_dir_path, exist_ok=True)
-    dst_path = os.path.join(dst_dir_path, f'{NOW_DATE}_chart.csv')
+    dst_path = os.path.join(dst_dir_path, f'transform_chart.csv')
 
     transform_df.to_csv(dst_path, encoding='utf-8-sig',index=False)
 
 
 def transform_chart_feature():
-    file_path = os.path.join(DOWNLOADS_DIR, f'chart/{NOW_DATE}')
-    filename = glob.glob(os.path.join(file_path,'*.csv'))
-    df = pd.read_csv(filename[0])
-    df.insert(0, 'perfume_id', range(1, len(df) + 1))
+    df = concat_csv()
     df = df[['perfume_id','Season', 'Spring', 'Summer', 'Fall',
     'Winter', 'Audience','Youthful',
     'Mature', 'Feminine', 'Masculine', 'Occasion','Evening', 'Business', 'Night Out', 'Leisure',
@@ -83,20 +86,17 @@ def transform_chart_feature():
             lst.append('Occasion')
     transform_df['parent'] = lst
     transform_df.insert(0, 'chart_feature_id', range(1, len(transform_df) + 1))
- 
+
     dst_dir_path =  os.path.join(TRANSFORM_DIR, f'chart_feature/{NOW_DATE}')
     os.makedirs(dst_dir_path, exist_ok=True)
-    dst_path = os.path.join(dst_dir_path, f'{NOW_DATE}_chart_feature.csv')
+    dst_path = os.path.join(dst_dir_path, 'transform_chart_feature.csv')
 
     transform_df.to_csv(dst_path, encoding='utf-8-sig',index=False)
 
 
 
 def transform_notes():
-    file_path = os.path.join(DOWNLOADS_DIR, f'chart/{NOW_DATE}')
-    filename = glob.glob(os.path.join(file_path,'*.csv'))
-    df = pd.read_csv(filename[0])
-    df.insert(0, 'perfume_id', range(1, len(df) + 1))
+    df = concat_csv()
     df = df[['perfume_id','top_notes','heart_notes','base_notes']]
 
     df['top_notes'] = df['top_notes'].apply(ast.literal_eval)
@@ -118,16 +118,13 @@ def transform_notes():
 
     dst_dir_path =  os.path.join(TRANSFORM_DIR, f'note/{NOW_DATE}')
     os.makedirs(dst_dir_path, exist_ok=True)
-    dst_path = os.path.join(dst_dir_path, f'{NOW_DATE}_note.csv')
+    dst_path = os.path.join(dst_dir_path, 'transform_note.csv')
 
     transform_df.to_csv(dst_path, encoding='utf-8-sig',index=False)
 
 
 def transform_rating():
-    file_path = os.path.join(DOWNLOADS_DIR, f'chart/{NOW_DATE}')
-    filename = glob.glob(os.path.join(file_path,'*.csv'))
-    df = pd.read_csv(filename[0])
-    df.insert(0, 'perfume_id', range(1, len(df) + 1))
+    df = concat_csv()
     df = df[['perfume_id' , 'scent', 'longevity', 'sillage', 'bottle', 'vfm', 
         'scent_count', 'longevity_count', 'sillage_count', 'bottle_count', 'vfm_count']]
     
@@ -147,15 +144,12 @@ def transform_rating():
 
     dst_dir_path =  os.path.join(TRANSFORM_DIR, f'rating/{NOW_DATE}')
     os.makedirs(dst_dir_path, exist_ok=True)
-    dst_path = os.path.join(dst_dir_path, f'{NOW_DATE}_rating.csv')
+    dst_path = os.path.join(dst_dir_path, 'transform_rating.csv')
 
     transform_df.to_csv(dst_path, encoding='utf-8-sig',index=False)
 
 def transform_accord():
-    file_path = os.path.join(DOWNLOADS_DIR, f'chart/{NOW_DATE}')
-    filename = glob.glob(os.path.join(file_path,'*.csv'))
-    df = pd.read_csv(filename[0])
-    df.insert(0, 'perfume_id', range(1, len(df) + 1))
+    df = concat_csv()
     df = df[['perfume_id','main_accords']]
     df['main_accords'] = df['main_accords'].apply(ast.literal_eval)
 
@@ -172,16 +166,13 @@ def transform_accord():
 
     dst_dir_path =  os.path.join(TRANSFORM_DIR, f'accord/{NOW_DATE}')
     os.makedirs(dst_dir_path, exist_ok=True)
-    dst_path = os.path.join(dst_dir_path, f'{NOW_DATE}_accord.csv')
+    dst_path = os.path.join(dst_dir_path, 'transform_accord.csv')
 
     transform_df.to_csv(dst_path, encoding='utf-8-sig',index=False)
 
 
 def transform_perfume():
-    file_path = os.path.join(DOWNLOADS_DIR, f'chart/{NOW_DATE}')
-    filename = glob.glob(os.path.join(file_path,'*.csv'))
-    df = pd.read_csv(filename[0])
-    df.insert(0, 'perfume_id', range(1, len(df) + 1))
+    df = concat_csv()
     columns = ['perfume_id' ,'brand','gender','rating', 'released_year','description', 'url', 'img_url', 'perfumers']
     df = df[columns]
     df['gender'] = df['gender'].apply(ast.literal_eval)
@@ -203,31 +194,33 @@ def transform_perfume():
     
     dst_dir_path =  os.path.join(TRANSFORM_DIR, f'perfume/{NOW_DATE}')
     os.makedirs(dst_dir_path, exist_ok=True)
-    dst_path = os.path.join(dst_dir_path, f'{NOW_DATE}_perfume.csv')
+    dst_path = os.path.join(dst_dir_path, 'transform_perfume.csv')
 
     transform_df.to_csv(dst_path, encoding='utf-8-sig',index=False)
 
 def transform_review():
-    path = os.path.join(DOWNLOADS_DIR, f'review/{NOW_DATE}')
+    path = os.path.join(DOWNLOADS_DIR, f'review/{NOW_DATE}/2020')
     json_files = glob.glob(os.path.join(path,"*.json"))
+    ref_df = concat_csv()
+    columns = ['perfume_id' , 'date','title','contents']
+    concat_df = pd.DataFrame(columns = columns)
     for json_file in json_files:
         with open(json_file, 'r', encoding='utf-8') as file:
             data = json.load(file)
             perfume_name = list(data.keys())[0]
             reviews = data[list(data.keys())[0]]['reviews']
             df = pd.DataFrame(reviews, columns = ['date','title','contents'])
+            perfume_id = list(ref_df[ref_df['perfume'] == perfume_name]['perfume_id'])
+            df.insert(0, 'perfume_id', perfume_id * len(df))
+
+            concat_df = pd.concat([concat_df, df])
             
-            path = os.path.join(DOWNLOADS_DIR, f'chart/{NOW_DATE}/{NOW_DATE}_chart.csv')
-            tmp_df = pd.read_csv(path)
-            tmp_df.insert(0, 'perfume_id', range(1, len(tmp_df) + 1))
-            perfume_id = tmp_df[tmp_df['perfume'] == perfume_name]['perfume_id'].values[0]
-            
-            df.insert(0, 'perfume_id', perfume_id)
-            src_dir_path = os.path.join(TRANSFORM_DIR, f'review/{NOW_DATE}')
-            os.makedirs(src_dir_path, exist_ok=True)
-            
-            src_path = os.path.join(src_dir_path, f'{perfume_name}.csv')
-            df.to_csv(src_path, encoding= 'utf-8', index = False)
+    concat_df.insert(0, 'review_id', range(1, len(concat_df) + 1))        
+    src_dir_path = os.path.join(TRANSFORM_DIR, f'review/{NOW_DATE}')
+    os.makedirs(src_dir_path, exist_ok=True)
+
+    src_path = os.path.join(src_dir_path, f'transform_review.csv')
+    concat_df.to_csv(src_path, encoding= 'utf-8', index = False)
 
 def upload_transform_files_to_s3(bucket_name: str) -> None:
     hook = S3Hook(aws_conn_id="aws_s3")
