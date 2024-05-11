@@ -21,7 +21,7 @@ def accord_to_db():
     hook = S3Hook('aws_s3')
 
     table = 'accord'
-    file_name = f'transform/{table}/{NOW_DATE}/{NOW_DATE}_{table}.csv'
+    file_name = f'transform/{table}/{NOW_DATE}/transform_{table}.csv'
     #file_name = os.path.join(TRANSFORM_DIR,f"{table}/{NOW_DATE}/{NOW_DATE}_{table}.csv")[2:]
 
     # S3에서 데이터를 문자열로 읽어옴
@@ -42,7 +42,7 @@ def chart_to_db():
     hook = S3Hook('aws_s3')
 
     table = 'chart'
-    file_name = f'transform/{table}/{NOW_DATE}/{NOW_DATE}_{table}.csv'
+    file_name = f'transform/{table}/{NOW_DATE}/transform_{table}.csv'
     #file_name = os.path.join(TRANSFORM_DIR,f"{table}/{NOW_DATE}/{NOW_DATE}_{table}.csv")[2:]
 
     # S3에서 데이터를 문자열로 읽어옴
@@ -63,7 +63,7 @@ def chart_feature_to_db():
     hook = S3Hook('aws_s3')
 
     table = 'chart_feature'
-    file_name = f'transform/{table}/{NOW_DATE}/{NOW_DATE}_{table}.csv'
+    file_name = f'transform/{table}/{NOW_DATE}/transform_{table}.csv'
     #file_name = os.path.join(TRANSFORM_DIR,f"{table}/{NOW_DATE}/{NOW_DATE}_{table}.csv")[2:]
 
     # S3에서 데이터를 문자열로 읽어옴
@@ -84,7 +84,7 @@ def note_to_db():
     hook = S3Hook('aws_s3')
 
     table = 'note'
-    file_name = f'transform/{table}/{NOW_DATE}/{NOW_DATE}_{table}.csv'
+    file_name = f'transform/{table}/{NOW_DATE}/transform_{table}.csv'
     #file_name = os.path.join(TRANSFORM_DIR,f"{table}/{NOW_DATE}/{NOW_DATE}_{table}.csv")[2:]
 
     # S3에서 데이터를 문자열로 읽어옴
@@ -105,7 +105,7 @@ def perfume_to_db():
     hook = S3Hook('aws_s3')
 
     table = 'perfume'
-    file_name = f'transform/{table}/{NOW_DATE}/{NOW_DATE}_{table}.csv'
+    file_name = f'transform/{table}/{NOW_DATE}/transform_{table}.csv'
     #file_name = os.path.join(TRANSFORM_DIR,f"{table}/{NOW_DATE}/{NOW_DATE}_{table}.csv")[2:]
 
     # S3에서 데이터를 문자열로 읽어옴
@@ -126,7 +126,7 @@ def rating_to_db():
     hook = S3Hook('aws_s3')
 
     table = 'rating'
-    file_name = f'transform/{table}/{NOW_DATE}/{NOW_DATE}_{table}.csv'
+    file_name = f'transform/{table}/{NOW_DATE}/transform_{table}.csv'
     #file_name = os.path.join(TRANSFORM_DIR,f"{table}/{NOW_DATE}/{NOW_DATE}_{table}.csv")[2:]
 
     # S3에서 데이터를 문자열로 읽어옴
@@ -147,27 +147,20 @@ def review_to_db():
     hook = S3Hook('aws_s3')
 
     table = 'review'
-    #file_name = f'transform/{table}/{NOW_DATE}/{NOW_DATE}_{table}.csv'
-
-    concat_df = pd.DataFrame(columns = ['perfume_id','date','title','contents'])
-    path = f'transform/{table}/{NOW_DATE}/*.csv'
-    file_paths = glob.glob(path)
-    for file_path in file_paths:    
-        # S3에서 데이터를 문자열로 읽어옴
-        data = hook.read_key(file_path, BUCKET_NAME)
-        
-        # 문자열 데이터를 StringIO 객체로 변환하고 pandas DataFrame으로 읽음
-        data_string = StringIO(data)
-        df = pd.read_csv(data_string)
-
-        concat_df = pd.concat([concat_df,df])
+    file_path = f'transform/{table}/{NOW_DATE}/transform_{table}.csv'   
+    # S3에서 데이터를 문자열로 읽어옴
+    data = hook.read_key(file_path, BUCKET_NAME)
+    
+    # 문자열 데이터를 StringIO 객체로 변환하고 pandas DataFrame으로 읽음
+    data_string = StringIO(data)
+    df = pd.read_csv(data_string)
 
     # 데이터베이스 연결 URI 설정
     connection_string = f"mysql+mysqlconnector://{USER}:{PASSWORD}@host.docker.internal:3306/{DB}"
     db_connection = create_engine(connection_string)
 
     # DataFrame을 MySQL 테이블에 저장
-    concat_df.to_sql(table , con=db_connection, if_exists='replace', index=False)
+    df.to_sql(table , con=db_connection, if_exists='replace', index=False)
 
 
 
