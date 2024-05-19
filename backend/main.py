@@ -24,7 +24,7 @@ class Preferences(BaseModel):
 @app.post("/recommend")
 def recommend(request: Preferences):
     try:
-        response = requests.post(RECSYS_API_URL, json=request.dict())
+        response = requests.post(RECSYS_API_URL, json=request.model_dump())
         response.raise_for_status()
         response_data = response.json()
         recommendations = response_data.get("recommendations", [])
@@ -33,9 +33,9 @@ def recommend(request: Preferences):
         if not recommendations:
             raise HTTPException(status_code=404, detail="No perfumes found")
 
-        df = get_data(recommendations)
+        sample_data = get_data(recommendations)
 
-        return df.to_json(orient="records")
+        return sample_data
 
     except requests.RequestException as e:
         raise HTTPException(

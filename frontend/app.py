@@ -135,9 +135,28 @@ with st.sidebar:
 # val_text
 # 조건 입력 없이 버튼 클릭 case handle
 
+# st.session_state.recommendations
+# UI - display recommendation result
 if st.session_state.recommendations:
-    st.header("Recommendation Result:")
-    st.session_state.recommendations
-    # with st.container:
-    #    for perfume in st.session_state.result:
-    #        st.write(perfume)
+    with st.container():
+        st.header("Recommendation Result:")
+
+        for perfume in st.session_state.recommendations:
+            name = perfume["perfume_name"]
+            year = perfume["year"]
+            brand = perfume["brand"]
+            image_url = perfume["image_url"]
+            notes_top = perfume["notes_top"]
+            notes_heart = perfume["notes_heart"]
+            notes_base = perfume["notes_base"]
+            rating = perfume["rating"]
+            link = perfume["link"]
+
+            with st.container(height=None, border=True):
+                st.markdown(f"🧴 **{name}** ({year}) from {brand}")
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.image(image_url)
+                with col2:
+                    st.markdown(f"rating: *{rating}*")
+                    st.link_button("Link", link, help="more info at www.parfumo.com")
