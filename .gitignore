@@ -1,2 +1,4 @@
 .env
-/frontend/venv_FE_streamlit/
+/frontend/venv/
+/backend/venv/
+/recsys/venv/

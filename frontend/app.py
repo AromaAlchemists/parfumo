@@ -1,5 +1,8 @@
 import streamlit as st
+import requests
 
+
+SERVER_URL = "http://127.0.0.1:8000/recommend"
 
 # values that will be sent to the server
 val_audience = [0, 0, 0, 0]
@@ -15,8 +18,32 @@ optcnt_audience = len(opts_audience)
 optcnt_season = len(opts_season)
 optcnt_occasion = len(opts_occasion)
 
+# initialize session state for recommendation result
+if "recommendations" not in st.session_state:
+    st.session_state.recommendations = []
 
-# page configuration (title on the tab)
+
+# (callback function for form button) send user input data to server
+def get_recommendation():
+    data = {
+        "audience": val_audience,
+        "season": val_season,
+        "occasion": val_occasion,
+        "text": val_text,
+    }
+
+    try:
+        response = requests.post(SERVER_URL, json=data)
+        response.raise_for_status()
+        recommendations = response.json()
+        st.session_state.recommendations = recommendations
+
+    # error handling
+    except requests.RequestException as e:
+        st.error(f"Failed to get recommendations: {e}")
+
+
+# page configuration (browser tab title)
 st.set_page_config(
     page_title="Aroma Alchemist - AA",
     page_icon="🧴",
@@ -99,10 +126,18 @@ with st.sidebar:
             )
 
         # UI for submit button
-        st.form_submit_button("Get Recommendations")
+        st.form_submit_button("Get Recommendations", on_click=get_recommendation)
 
 
 # val_audience
 # val_season
 # val_occasion
 # val_text
+# 조건 입력 없이 버튼 클릭 case handle
+
+if st.session_state.recommendations:
+    st.header("Recommendation Result:")
+    st.session_state.recommendations
+    # with st.container:
+    #    for perfume in st.session_state.result:
+    #        st.write(perfume)
