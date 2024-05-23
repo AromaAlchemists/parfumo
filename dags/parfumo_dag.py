@@ -38,18 +38,23 @@ from utils import common_util
 
 # 5천개 기분 약 3분
 def crawling_perfume_product():
-    for year in range(2020,2025):
+    for year in range(2020,2021):
         df_perfume = pd.DataFrame(columns=['perfume','brand','url','img_url'])
         perfume_name = []
         brand_name = []
         url_list = []
         img_list = [] 
-        for page in range(2) :
-            url = "https://www.parfumo.com/Release_Years/{}?current_page={}&order=nv_desc&hide_order_year=1&show_order_brand=1".format(year, page)
-            req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-            webpage = urlopen(req).read()
 
-            soup = BeautifulSoup(webpage, 'html.parser')
+        base_url = f'https://www.parfumo.com/Release_Years/{year}'
+        soup = common_util.get_soup(base_url)
+        pages = int(soup.find('div', class_='numbers').find_all('div')[-1].text)
+        #logging.info(f'the length of pages: {pages}')
+        for page in range(pages) :
+            url = "https://www.parfumo.com/Release_Years/{}?current_page={}&order=nv_desc&hide_order_year=1&show_order_brand=1".format(year, page)
+            # req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            # webpage = urlopen(req).read()
+            soup = common_util.get_soup(url)
+            #soup = BeautifulSoup(webpage, 'html.parser')
             ul = soup.select('div.name')
             if(ul) :
                 for name in ul : 
@@ -75,7 +80,7 @@ def crawling_perfume_product():
 
 # 5천개 기준 1시간
 def crawling_perfume_detail():
-    for YEAR in list(range(2020,2025)):
+    for YEAR in list(range(2020,2021)):
         df = common_util.concat_chart_feature(YEAR)
         url_list = df['url'].tolist()
 
@@ -328,7 +333,7 @@ def crawling_perfume_chart_review():
     logging.info("Access the website successfully!" )
 
     driver.switch_to.default_content()
-    for YEAR in range(2020,2022):
+    for YEAR in range(2020,2021):
         file_path = os.path.join(DOWNLOADS_DIR, f'perfume_detail/{NOW_DATE}/{YEAR}')
         filename = glob.glob(os.path.join(file_path,'*.csv'))[0]
         df = pd.read_csv(filename)
@@ -454,7 +459,7 @@ def crawling_perfume_chart_review():
                         logging.info("Getting a infomation successfully!")
                     except :
                         attempts += 1
-                        logging.info("Fail to get a infomation successfully")
+                        logging.info("Fail to get a infomation")
         
         
         #driver.quit()
@@ -483,11 +488,11 @@ def upload_raw_files_to_s3(bucket_name: str) -> None:
     hook = S3Hook(aws_conn_id="aws_s3")
     logging.info("Connecting successfully!")
     
-    for YEAR in range(2020,2022):
+    for YEAR in range(2020,2021):
         perfume_product_src_path = os.path.join(DOWNLOADS_DIR, f'perfume_product/{NOW_DATE}/{YEAR}')
         perfume_detail_src_path = os.path.join(DOWNLOADS_DIR, f'perfume_detail/{NOW_DATE}/{YEAR}')
         chart_src_path = os.path.join(DOWNLOADS_DIR, f'chart/{NOW_DATE}/{YEAR}')
-        review_src_path = os.path.join(DOWNLOADS_DIR, f'review/{NOW_DATE}/')
+        review_src_path = os.path.join(DOWNLOADS_DIR, f'review/{NOW_DATE}/{YEAR}')
 
         src_paths = [perfume_product_src_path, perfume_detail_src_path, chart_src_path, review_src_path]
         for src_path in src_paths:
