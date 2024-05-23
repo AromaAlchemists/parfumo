@@ -8,11 +8,21 @@ from utils.constant_util import *
 from urllib.request import Request, urlopen
 from bs4 import BeautifulSoup 
 
+# transform_dag.py
+def concat_csv():
+    concat_df = pd.DataFrame()
+    for year in YEARS:
+        file_path = os.path.join(DOWNLOADS_DIR, f'chart/{NOW_DATE}/{year}/*.csv')
+        filename = glob.glob(file_path)
+        df = pd.read_csv(filename[0])
+        concat_df = pd.concat([concat_df,df])
+    concat_df.insert(0, 'perfume_id', range(1, len(concat_df) + 1))
+    return concat_df
 
+# parfumo_dag.py
 def get_soup(url):
     req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
     webpage = urlopen(req).read()
-
     soup = BeautifulSoup(webpage, 'html.parser')
     return soup
 
