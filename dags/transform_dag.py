@@ -17,20 +17,11 @@ import ast
 from urllib.parse import quote
 import json
 from utils.constant_util import *
-
+from utils import common_util
 # 항상 transform은 크롤링 완성본인 review 파일로 진행
-def concat_csv():
-    concat_df = pd.DataFrame()
-    for year in [2020]:
-        file_path = os.path.join(DOWNLOADS_DIR, f'chart/{NOW_DATE}/{year}/*.csv')
-        filename = glob.glob(file_path)
-        df = pd.read_csv(filename[0])
-        concat_df = pd.concat([concat_df,df])
-    concat_df.insert(0, 'perfume_id', range(1, len(concat_df) + 1))
-    return concat_df
 
-def transform_chart():
-    df = concat_csv()
+def transform_chart(df):
+    #df = common_util.concat_csv()
     df = df[['perfume_id','Type','Occasion','Season','Audience']].T
 
     columns = ['perfume_id','name','vote']
@@ -50,8 +41,8 @@ def transform_chart():
     transform_df.to_csv(dst_path, encoding='utf-8-sig',index=False)
 
 
-def transform_chart_feature():
-    df = concat_csv()
+def transform_chart_feature(df):
+    #df = common_util.concat_csv()
     df = df[['perfume_id','Season', 'Spring', 'Summer', 'Fall',
     'Winter', 'Audience','Youthful',
     'Mature', 'Feminine', 'Masculine', 'Occasion','Evening', 'Business', 'Night Out', 'Leisure',
@@ -95,8 +86,8 @@ def transform_chart_feature():
 
 
 
-def transform_notes():
-    df = concat_csv()
+def transform_notes(df):
+    #df = common_util.concat_csv()
     df = df[['perfume_id','top_notes','heart_notes','base_notes']]
 
     df['top_notes'] = df['top_notes'].apply(ast.literal_eval)
@@ -123,8 +114,8 @@ def transform_notes():
     transform_df.to_csv(dst_path, encoding='utf-8-sig',index=False)
 
 
-def transform_rating():
-    df = concat_csv()
+def transform_rating(df):
+    #df = common_util.concat_csv()
     df = df[['perfume_id' , 'scent', 'longevity', 'sillage', 'bottle', 'vfm', 
         'scent_count', 'longevity_count', 'sillage_count', 'bottle_count', 'vfm_count']]
     
@@ -148,8 +139,8 @@ def transform_rating():
 
     transform_df.to_csv(dst_path, encoding='utf-8-sig',index=False)
 
-def transform_accord():
-    df = concat_csv()
+def transform_accord(df):
+    #df = common_util.concat_csv()
     df = df[['perfume_id','main_accords']]
     df['main_accords'] = df['main_accords'].apply(ast.literal_eval)
 
@@ -171,8 +162,8 @@ def transform_accord():
     transform_df.to_csv(dst_path, encoding='utf-8-sig',index=False)
 
 
-def transform_perfume():
-    df = concat_csv()
+def transform_perfume(df):
+    #df = common_util.concat_csv()
     columns = ['perfume_id' ,'brand','gender','rating', 'released_year','description', 'url', 'img_url', 'perfumers']
     df = df[columns]
     df['gender'] = df['gender'].apply(ast.literal_eval)
@@ -198,10 +189,10 @@ def transform_perfume():
 
     transform_df.to_csv(dst_path, encoding='utf-8-sig',index=False)
 
-def transform_review():
+def transform_review(df):
     path = os.path.join(DOWNLOADS_DIR, f'review/{NOW_DATE}/2020')
     json_files = glob.glob(os.path.join(path,"*.json"))
-    ref_df = concat_csv()
+    ref_df = df
     columns = ['perfume_id' , 'date','title','contents']
     concat_df = pd.DataFrame(columns = columns)
     for json_file in json_files:
@@ -261,37 +252,58 @@ with DAG(dag_id="transform_parfumo_to_s3_dag",
 
     transform_chart_task = PythonOperator(
         task_id = "transform_chart_task",
-        python_callable=transform_chart
+        python_callable=transform_chart,
+        op_kwargs= {
+            "df": common_util.concat_csv()
+        }
     )
 
     transform_chart_feature_task = PythonOperator(
         task_id = "transform_chart_feature_task",
-        python_callable=transform_chart_feature
+        python_callable=transform_chart_feature,
+        op_kwargs= {
+            "df": common_util.concat_csv()
+        }
     )
 
     transform_notes_task = PythonOperator(
         task_id = "transform_notes_task",
-        python_callable=transform_notes
+        python_callable=transform_notes,
+        op_kwargs= {
+            "df": common_util.concat_csv()
+        }
     )
     
     transform_rating_task = PythonOperator(
         task_id = "transform_rating_task",
-        python_callable=transform_rating
+        python_callable=transform_rating,
+        op_kwargs= {
+            "df": common_util.concat_csv()
+        }
     )
 
     transform_accord_task = PythonOperator(
         task_id = "transform_accord_task",
-        python_callable=transform_accord
+        python_callable=transform_accord,
+        op_kwargs= {
+            "df": common_util.concat_csv()
+        }
     )
 
     transform_perfume_task = PythonOperator(
         task_id = "transform_perfume_task",
-        python_callable=transform_perfume
+        python_callable=transform_perfume,
+        op_kwargs= {
+            "df": common_util.concat_csv()
+        }
     )
 
     transform_review_task = PythonOperator(
         task_id = "transform_review_task",
-        python_callable=transform_review
+        python_callable=transform_review,
+        op_kwargs= {
+            "df": common_util.concat_csv()
+        }
     )
 
     
