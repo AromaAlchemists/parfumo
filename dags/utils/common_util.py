@@ -5,6 +5,16 @@ import pandas as pd
 import glob
 import json
 from utils.constant_util import *
+from urllib.request import Request, urlopen
+from bs4 import BeautifulSoup 
+
+
+def get_soup(url):
+    req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+    webpage = urlopen(req).read()
+
+    soup = BeautifulSoup(webpage, 'html.parser')
+    return soup
 
 def concat_chart_feature(YEAR):
     file_path = os.path.join(DOWNLOADS_DIR, f'perfume_product/{NOW_DATE}/{YEAR}')
