@@ -1,5 +1,4 @@
 from airflow.models.variable import Variable
-
 from datetime import datetime, timedelta
 import os
 
@@ -11,7 +10,6 @@ TRANSFORM_DIR = os.path.join(AIRFLOW_HOME, 'transform')
 NOW_DATE = datetime.now().strftime("%Y-%m-%d")
 
 # RDS
-BUCKET_NAME = Variable.get("BUCKET_NAME")
 HOST = Variable.get("HOST")
 USER = Variable.get("USER")
 PASSWORD = Variable.get('PASSWORD')
@@ -19,6 +17,8 @@ DB = Variable.get("DB")
 
 AWS_ACCESS_KEY_ID = Variable.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = Variable.get("AWS_SECRET_ACCESS_KEY")
+
+YEARS = list(range(2020,2021))
 
 total_main_accords = []
 total_top_notes = []
