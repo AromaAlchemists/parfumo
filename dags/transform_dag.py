@@ -21,7 +21,7 @@ from utils.constant_util import *
 # 항상 transform은 크롤링 완성본인 review 파일로 진행
 def concat_csv():
     concat_df = pd.DataFrame()
-    for year in [2020,2021]:
+    for year in [2020]:
         file_path = os.path.join(DOWNLOADS_DIR, f'chart/{NOW_DATE}/{year}/*.csv')
         filename = glob.glob(file_path)
         df = pd.read_csv(filename[0])
