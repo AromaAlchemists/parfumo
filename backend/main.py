@@ -20,11 +20,25 @@ class Preferences(BaseModel):
     text: str
 
 
+# scale input list to make the sum of its elements equals 1
+def scale_to_one(val_list):
+    total = sum(val_list)
+
+    if total == 0:
+        return val_list
+
+    return [val / total for val in val_list]
+
+
 # handle post request from FE
 @app.post("/recommend")
-def recommend(request: Preferences):
+def recommend(userinput: Preferences):
+    userinput.audience = scale_to_one(userinput.audience)
+    userinput.season = scale_to_one(userinput.season)
+    userinput.occasion = scale_to_one(userinput.occasion)
+
     try:
-        response = requests.post(RECSYS_API_URL, json=request.model_dump())
+        response = requests.post(RECSYS_API_URL, json=userinput.model_dump())
         response.raise_for_status()
         response_data = response.json()
         recommendations = response_data.get("recommendations", [])
