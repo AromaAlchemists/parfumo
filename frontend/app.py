@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 
 
-SERVER_URL = "http://127.0.0.1:8000/recommend"
+SERVER_URL = "http://127.0.0.1:8000"
 
 # values that will be sent to the server
 val_audience = [0, 0, 0, 0]
@@ -17,6 +17,10 @@ opts_occasion = ["Leisure", "Daily", "Night out", "Business", "Sport", "Evening"
 optcnt_audience = len(opts_audience)
 optcnt_season = len(opts_season)
 optcnt_occasion = len(opts_occasion)
+
+# initialize session state for chat input
+if "val_chat" not in st.session_state:
+    st.session_state.val_chat = ""
 
 # initialize session state for recommendation result
 if "recommendations" not in st.session_state:
@@ -47,15 +51,15 @@ def check_input():
     )
 
 
-# (callback function for form button) send user input data to server
-def get_recommendation():
+# (callback function for form button) send user input data to server and get recommendation result
+def get_quick_recommendation():
     # case handling for no inputs
     if check_input():
         st.warning("Please select/enter your preferences!", icon="⚠️")
         return
 
     # packaging user input
-    userinput = {
+    prefinput = {
         "audience": val_audience,
         "season": val_season,
         "occasion": val_occasion,
@@ -64,7 +68,25 @@ def get_recommendation():
 
     try:
         # send request & get response from server
-        response = requests.post(SERVER_URL, json=userinput)
+        response = requests.post(SERVER_URL + "/quick-recommendation", json=prefinput)
+        response.raise_for_status()
+        st.session_state.recommendations = (
+            response.json()
+        )  # keep recommendation result in session_state.recommendations
+
+    # error handling
+    except requests.RequestException as e:
+        st.error(f"Failed to get recommendations: {e}")
+
+
+# (callback function for chat input submit) send chat input data to server and get recommendation result
+def get_chat_recommendation():
+    chatinput = {
+        "chat": st.session_state.val_chat,
+    }
+    try:
+        # send request & get response from server
+        response = requests.post(SERVER_URL + "/chat-recommendation", json=chatinput)
         response.raise_for_status()
         st.session_state.recommendations = (
             response.json()
@@ -93,6 +115,12 @@ I'm your personal perfume advisor.
 You can tell me what type of perfume you're looking for, or simply select your preferences on the sidebar for a quick recommendation!
 """
 )
+
+# UI - chat_input / Chat Recommendation
+st.session_state.val_chat = st.chat_input("Enter preferences!")
+if st.session_state.val_chat:
+    get_chat_recommendation()
+
 
 # UI - sidebar / Quick Recommendation
 with st.sidebar:
@@ -152,7 +180,7 @@ with st.sidebar:
             label_visibility="collapsed",
         )
 
-    st.button("Get Recommendation", on_click=get_recommendation)
+    st.button("Get Recommendation", on_click=get_quick_recommendation)
 
 
 # UI - display recommendation result
@@ -178,4 +206,6 @@ if st.session_state.recommendations:
                     st.markdown(f"rating: *{rating}*")
                     st.link_button("Link", link, help="more info at www.parfumo.com")
                 with col2:
-                    st.image(image_url)
+                    col2_1, col2_2, col2_3 = st.columns(3)
+                    with col2_2:
+                        st.image(image_url, width=150)
