@@ -1,8 +1,18 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from contextlib import asynccontextmanager
 
 
-app = FastAPI()
+# lifespan handler for graceful shutdown
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("...Starting up [Recsys API server]...")
+    yield
+    print("...Shutting down [Recsys API server]...")
+
+
+app = FastAPI(lifespan=lifespan)
+
 
 # sample code
 
