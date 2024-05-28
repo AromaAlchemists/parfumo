@@ -1,5 +1,8 @@
 # spotify dashboard gitignore custom
 
+.env/
+.ssh/
+
 config/
 logs/
 plugins/
