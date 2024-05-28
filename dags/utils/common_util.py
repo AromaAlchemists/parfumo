@@ -16,6 +16,7 @@ def concat_csv():
         filename = glob.glob(file_path)
         df = pd.read_csv(filename[0])
         concat_df = pd.concat([concat_df,df])
+    concat_df = concat_df.drop_duplicates(subset='perfume').reset_index(drop=True)
     concat_df.insert(0, 'perfume_id', range(1, len(concat_df) + 1))
     return concat_df
 
