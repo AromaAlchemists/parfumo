@@ -38,7 +38,7 @@ from utils import common_util
 
 # 5천개 기분 약 3분
 def crawling_perfume_product():
-    for year in range(2020,2021):
+    for year in YEARS:
         df_perfume = pd.DataFrame(columns=['perfume','brand','url','img_url'])
         perfume_name = []
         brand_name = []
@@ -80,7 +80,7 @@ def crawling_perfume_product():
 
 # 5천개 기준 1시간
 def crawling_perfume_detail():
-    for YEAR in list(range(2020,2021)):
+    for YEAR in YEARS:
         df = common_util.concat_chart_feature(YEAR)
         url_list = df['url'].tolist()
 
@@ -488,7 +488,7 @@ def upload_raw_files_to_s3(bucket_name: str) -> None:
     hook = S3Hook(aws_conn_id="aws_s3")
     logging.info("Connecting successfully!")
     
-    for YEAR in range(2020,2021):
+    for YEAR in YEARS:
         perfume_product_src_path = os.path.join(DOWNLOADS_DIR, f'perfume_product/{NOW_DATE}/{YEAR}')
         perfume_detail_src_path = os.path.join(DOWNLOADS_DIR, f'perfume_detail/{NOW_DATE}/{YEAR}')
         chart_src_path = os.path.join(DOWNLOADS_DIR, f'chart/{NOW_DATE}/{YEAR}')
