@@ -145,15 +145,17 @@ def transform_accord(df):
     df['main_accords'] = df['main_accords'].apply(ast.literal_eval)
 
     columns = ['perfume_id', 'name']
-    accord_dict = {column : [] for column in columns}
     transform_df = pd.DataFrame(columns = columns)
     for row in range(len(df.index)):
+        accord_dict = {column : [] for column in columns}
+        
         accord_dict['name'] += df.iloc[row,1]
         accord_dict['perfume_id'] += ([df.iloc[row,0]] * len(list(df.iloc[row,1])))
         
         temp_df = pd.DataFrame(accord_dict)
         transform_df = pd.concat([transform_df, temp_df])
     transform_df.insert(0, 'accord_id', range(1, len(transform_df) + 1))
+
 
     dst_dir_path =  os.path.join(TRANSFORM_DIR, f'accord/{NOW_DATE}')
     os.makedirs(dst_dir_path, exist_ok=True)
@@ -201,7 +203,7 @@ def transform_review(df):
             perfume_name = list(data.keys())[0]
             reviews = data[list(data.keys())[0]]['reviews']
             df = pd.DataFrame(reviews, columns = ['date','title','contents'])
-            perfume_id = list(ref_df[ref_df['perfume'] == perfume_name]['perfume_id'])
+            perfume_id = list(ref_df[ref_df['perfume'] == perfume_name]['perfume_id'])[0]
             df.insert(0, 'perfume_id', perfume_id * len(df))
 
             concat_df = pd.concat([concat_df, df])
