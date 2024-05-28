@@ -166,7 +166,7 @@ def transform_accord(df):
 
 def transform_perfume(df):
     #df = common_util.concat_csv()
-    columns = ['perfume_id' ,'brand','gender','rating', 'released_year','description', 'url', 'img_url', 'perfumers']
+    columns = ['perfume_id', 'perfume', 'brand','gender','rating', 'released_year','description', 'url', 'img_url', 'perfumers']
     df = df[columns]
     df['gender'] = df['gender'].apply(ast.literal_eval)
     df['perfumers'] = df['perfumers'].apply(ast.literal_eval)
@@ -182,7 +182,7 @@ def transform_perfume(df):
                 tmp_df = df[columns].iloc[[row]]
                 tmp_df['perfumer'] = perfumer
                 transform_df = pd.concat([transform_df, tmp_df])
-    transform_df = transform_df[['perfume_id' ,'brand','gender','rating', 'released_year','description', 'url', 'img_url', 'perfumer']]
+    transform_df = transform_df[['perfume_id', 'perfume', 'brand','gender','rating', 'released_year','description', 'url', 'img_url', 'perfumer']]
     transform_df['gender'] = transform_df['gender'].apply(lambda x: x[0])
     
     dst_dir_path =  os.path.join(TRANSFORM_DIR, f'perfume/{NOW_DATE}')
