@@ -119,7 +119,7 @@ def crawling_perfume_detail():
         gender = []
 
         
-        for url in url_list[:5]:
+        for url in url_list:
             req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
             webpage = urlopen(req).read()
             soup = BeautifulSoup(webpage, 'html.parser')
@@ -280,7 +280,7 @@ def crawling_perfume_detail():
                 description_list.append(sstt)
             else : description_list.append("")
             
-        df = df.iloc[:5,:]
+        #df = df.iloc[:5,:]
         df['description'] = description_list
         
         df['gender'] = gender_list
@@ -333,7 +333,7 @@ def crawling_perfume_chart_review():
     logging.info("Access the website successfully!" )
 
     driver.switch_to.default_content()
-    for YEAR in range(2020,2021):
+    for YEAR in YEARS:
         file_path = os.path.join(DOWNLOADS_DIR, f'perfume_detail/{NOW_DATE}/{YEAR}')
         filename = glob.glob(os.path.join(file_path,'*.csv'))[0]
         df = pd.read_csv(filename)
