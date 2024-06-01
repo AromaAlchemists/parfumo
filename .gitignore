@@ -5,3 +5,4 @@
 /recsys/venv/
 /recsys/__pycache__/
 .vscode/
+/frontend/.streamlit/
