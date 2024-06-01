@@ -1,9 +1,9 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-import httpx
 import pandas as pd
-from database import get_data
 from contextlib import asynccontextmanager
+from models import Preferences, Chat
+from database import get_data
+from recsys import do_scoring_and_rag, do_rag
 
 
 # lifespan handler for graceful shutdown
@@ -15,22 +15,6 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-
-
-# temp
-RECSYS_API_URL = "http://127.0.0.1:8001"
-
-
-# define data model
-class Preferences(BaseModel):
-    audience: list
-    season: list
-    occasion: list
-    text: str
-
-
-class Chat(BaseModel):
-    chat: str
 
 
 # scale input list to make the sum of its elements equals 1
@@ -51,26 +35,16 @@ async def quick_recommend(prefinput: Preferences):
     prefinput.occasion = scale_to_one(prefinput.occasion)
 
     try:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                RECSYS_API_URL + "/quick-recommendation", json=prefinput.model_dump()
-            )
-            response.raise_for_status()
-            response_data = response.json()
-            recommendations = response_data.get("recommendations", [])
+        recommendations = do_scoring_and_rag(prefinput)
 
-            # error handling - no result from RecSys
-            if not recommendations:
-                raise HTTPException(status_code=404, detail="No perfumes found")
+        # error handling - no result from RecSys
+        if not recommendations:
+            raise HTTPException(status_code=404, detail="No perfumes found")
 
-            sample_data = get_data(recommendations)
+        sample_data = get_data(recommendations)
 
-            return sample_data
+        return sample_data
 
-    except httpx.RequestError as e:
-        raise HTTPException(
-            status_code=500, detail=f"RecSysAPI request failed: {str(e)}"
-        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
@@ -79,26 +53,16 @@ async def quick_recommend(prefinput: Preferences):
 @app.post("/chat-recommendation")
 async def chat_recommend(chatinput: Chat):
     try:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                RECSYS_API_URL + "/chat-recommendation", json=chatinput.model_dump()
-            )
-            response.raise_for_status()
-            response_data = response.json()
-            recommendations = response_data.get("recommendations", [])
+        recommendations = do_rag(chatinput)
 
-            # error handling - no result from RecSys
-            if not recommendations:
-                raise HTTPException(status_code=404, detail="No perfumes found")
+        # error handling - no result from RecSys
+        if not recommendations:
+            raise HTTPException(status_code=404, detail="No perfumes found")
 
-            sample_data = get_data(recommendations)
+        sample_data = get_data(recommendations)
 
-            return sample_data
+        return sample_data
 
-    except httpx.RequestError as e:
-        raise HTTPException(
-            status_code=500, detail=f"RecSysAPI request failed: {str(e)}"
-        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 

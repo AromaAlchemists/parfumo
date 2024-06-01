@@ -1,8 +1,5 @@
 .env
+.vscode/
 /frontend/venv/
 /backend/venv/
 /backend/__pycache__/
-/recsys/venv/
-/recsys/__pycache__/
-.vscode/
-/frontend/.streamlit/

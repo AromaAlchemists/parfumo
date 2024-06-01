@@ -1,0 +1,40 @@
+[theme]
+
+primaryColor = '#333333'
+backgroundColor = '#F5F5DC'
+secondaryBackgroundColor = '#E0E0C1'
+textColor = '#654321'
+font = "monospace"
+
+
+# Primary accent for interactive elements
+# Background color for the main content area
+# Background color for sidebar and most interactive widgets
+# Color used for almost all text
+# Font family for all text in the app, except code blocks
+# Accepted values (serif | sans serif | monospace) 
+# Default: "sans serif"
+
+
+# 1
+#primaryColor = '#8B0000'
+#backgroundColor = '#FFE4E1'
+#secondaryBackgroundColor = '#FFB347'
+#textColor = '#654321'
+#font = "monospace"
+
+
+# 2
+#primaryColor = '#2F4F4F'
+#backgroundColor = '#B0C4DE'
+#secondaryBackgroundColor = '#778899'
+#textColor = '#000000'
+#font = "sans serif"
+
+
+# 3
+#primaryColor = '#006400'
+#backgroundColor = '#F5FFFA'
+#secondaryBackgroundColor = '#98FB98'
+#textColor = '#333333'
+#font = "sans serif"
