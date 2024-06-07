@@ -42,7 +42,14 @@ opt_audience = [
     "여성스러운 (Feminine)",
     "남성스러운 (Masculine)",
 ]
-opt_occasion = ["Leisure", "Daily", "Night out", "Business", "Sport", "Evening"]
+opt_occasion = [
+    "여가 (Leisure)",
+    "일상 (Daily)",
+    "외출 (Night out)",
+    "업무 (Business)",
+    "운동 (Sport)",
+    "저녁 모임 (Evening)",
+]
 # category = ["quick_accord", "quick_season", "quick_audience", "quick_occasion", ]
 
 
@@ -71,6 +78,104 @@ if "flag" not in st.session_state:
 if "page" not in st.session_state:
     st.session_state.page = 0
 
+if "selected_list" not in st.session_state:
+    st.session_state.selected_list = []
+
+if "selected_values" not in st.session_state:
+    st.session_state.selected_values = {
+        "season": None,
+        "audience": None,
+        "occasion": None,
+        "accord": [],
+    }
+
+
+def update_suggestion():
+    season = st.session_state.selected_values["season"]
+    audience = st.session_state.selected_values["audience"]
+
+    if season == "봄":
+        if audience == "젊은 (Youthful)":
+            st.session_state.selected_values["occasion"] = "일상 (Daily)"
+            st.session_state.selected_values["accord"] = ["Fresh", "Floral"]
+        elif audience == "성숙한 (Mature)":
+            st.session_state.selected_values["occasion"] = "업무 (Business)"
+            st.session_state.selected_values["accord"] = ["Powdery", "Woody"]
+        elif audience == "여성스러운 (Feminine)":
+            st.session_state.selected_values["occasion"] = "여가 (Leisure)"
+            st.session_state.selected_values["accord"] = ["Floral", "Fruity"]
+        elif audience == "남성스러운 (Masculine)":
+            st.session_state.selected_values["occasion"] = "운동 (Sport)"
+            st.session_state.selected_values["accord"] = ["Woody", "Green"]
+
+    elif season == "여름":
+        if audience == "젊은 (Youthful)":
+            st.session_state.selected_values["occasion"] = "여가 (Leisure)"
+            st.session_state.selected_values["accord"] = ["Aquatic", "Citrus"]
+        elif audience == "성숙한 (Mature)":
+            st.session_state.selected_values["occasion"] = "저녁 모임 (Evening)"
+            st.session_state.selected_values["accord"] = ["Oriental", "Spicy"]
+        elif audience == "여성스러운 (Feminine)":
+            st.session_state.selected_values["occasion"] = "일상 (Daily)"
+            st.session_state.selected_values["accord"] = ["Floral", "Fruity"]
+        elif audience == "남성스러운 (Masculine)":
+            st.session_state.selected_values["occasion"] = "외출 (Night out)"
+            st.session_state.selected_values["accord"] = ["Woody", "Smoky"]
+
+    elif season == "가을":
+        if audience == "젊은 (Youthful)":
+            st.session_state.selected_values["occasion"] = "저녁 모임 (Evening)"
+            st.session_state.selected_values["accord"] = ["Woody", "Spicy"]
+        elif audience == "성숙한 (Mature)":
+            st.session_state.selected_values["occasion"] = "업무 (Business)"
+            st.session_state.selected_values["accord"] = ["Leathery", "Resinous"]
+        elif audience == "여성스러운 (Feminine)":
+            st.session_state.selected_values["occasion"] = "일상 (Daily)"
+            st.session_state.selected_values["accord"] = ["Floral", "Powdery"]
+        elif audience == "남성스러운 (Masculine)":
+            st.session_state.selected_values["occasion"] = "운동 (Sport)"
+            st.session_state.selected_values["accord"] = ["Woody", "Leathery"]
+
+    elif season == "겨울":
+        if audience == "젊은 (Youthful)":
+            st.session_state.selected_values["occasion"] = "외출 (Night out)"
+            st.session_state.selected_values["accord"] = ["Spicy", "Resinous"]
+        elif audience == "성숙한 (Mature)":
+            st.session_state.selected_values["occasion"] = "저녁 모임 (Evening)"
+            st.session_state.selected_values["accord"] = ["Smoky", "Woody"]
+        elif audience == "여성스러운 (Feminine)":
+            st.session_state.selected_values["occasion"] = "여가 (Leisure)"
+            st.session_state.selected_values["accord"] = ["Gourmand", "Floral"]
+        elif audience == "남성스러운 (Masculine)":
+            st.session_state.selected_values["occasion"] = "업무 (Business)"
+            st.session_state.selected_values["accord"] = ["Woody", "Leathery"]
+
+
+def update_selected_values():
+    selected_list = st.session_state.selected_list
+
+    if "봄" in selected_list:
+        st.session_state.selected_values["season"] = "봄"
+    if "여름" in selected_list:
+        st.session_state.selected_values["season"] = "여름"
+    if "가을" in selected_list:
+        st.session_state.selected_values["season"] = "가을"
+    if "겨울" in selected_list:
+        st.session_state.selected_values["season"] = "겨울"
+
+    if "젊은 (Youthful)" in selected_list:
+        st.session_state.selected_values["audience"] = "젊은 (Youthful)"
+        update_suggestion()
+    if "성숙한 (Mature)" in selected_list:
+        st.session_state.selected_values["audience"] = "성숙한 (Mature)"
+        update_suggestion()
+    if "여성스러운 (Feminine)" in selected_list:
+        st.session_state.selected_values["audience"] = "여성스러운 (Feminine)"
+        update_suggestion()
+    if "남성스러운 (Masculine)" in selected_list:
+        st.session_state.selected_values["audience"] = "남성스러운 (Masculine)"
+        update_suggestion()
+
 
 def check_input():
     v_season = any(st.session_state.quick_season)
@@ -84,11 +189,11 @@ def check_input():
 def get_quick_recommendation():
     # packaging user input
     input_quick = {
-        #        "accord": [
-        #            opt_accord[i]
-        #            for i in range(len(opt_accord))
-        #            if st.session_state.quick_accord[i]
-        #        ],
+        "accord": [
+            opt_accord[i]
+            for i in range(len(opt_accord))
+            if st.session_state.quick_accord[i]
+        ],
         "audience": st.session_state.quick_audience,
         "season": st.session_state.quick_season,
         "occasion": st.session_state.quick_occasion,
@@ -222,27 +327,25 @@ def make_page():
             else:
                 warning()
 
+    # UI - intro
+    # on = st.toggle("상세 선택")
 
-# UI - intro
+
+# if on:
 st.title("✨ Aroma Alchemist ✨")
 st.markdown(
     """
 #### Welcome!
-
 I'm your personal perfume advisor.
-
 You can tell me what type of perfume you're looking for, or simply select your preferences on the sidebar for a quick recommendation!
 """
 )
-
 if not st.session_state.flag:
     tab_quick, tab_chat = st.tabs(
         ["⚡ Quick Recommendation", "💬 Recommendation by Chat"]
     )
-
     with tab_quick:
         make_page()
-
     with tab_chat:
         st.markdown(
             "채팅으로 자유롭게 찾고자 하는 향수에 대해 얘기해주시면, 사용 후기를 바탕으로 가장 적합한 향수를 추천해드릴게요!"
@@ -250,7 +353,6 @@ if not st.session_state.flag:
         st.session_state.chat_text = st.chat_input("여기에 입력해주세요")
         if st.session_state.chat_text:
             get_chat_recommendation()
-
 else:
     st.subheader("Recommendation Result:")
     for perfume in st.session_state.recommendation:
@@ -268,11 +370,86 @@ else:
                 st.link_button("Link", link, help="more info at www.parfumo.com")
             with col2:
                 st.image(image_url, width=150)
-
     col1, col2 = st.columns([0.7, 0.3])
     with col2:
         st.button(
-            "선택으로 돌아가기", on_click=lambda: st.session_state.update(flag=False)
+            "선택으로 돌아가기",
+            on_click=lambda: st.session_state.update(flag=False),
         )
+
+
+# else:
+#    pass
+#    update_selected_values()
+#
+#    if not st.session_state.selected_values["season"]:
+#        st.session_state.selected_list = st.multiselect(
+#            "사용하고 싶은 계절을 선택해주세요.",
+#            ["봄", "여름", "가을", "겨울"],
+#            # on_change=st.rerun,
+#            max_selections=1,
+#            placeholder="사용하고 싶은 계절을 선택해주세요",
+#            label_visibility="hidden",
+#        )
+#
+#    else:
+#        if st.session_state.selected_values["season"] == "봄":
+#            if not st.session_state.selected_values["audience"]:
+#                st.session_state.selected_list = st.multiselect(
+#                    "어떤 느낌을 원하시나요?",
+#                    [
+#                        "봄",
+#                        "젊은 (Youthful)",
+#                        "성숙한 (Mature)",
+#                        "여성스러운 (Feminine)",
+#                        "남성스러운 (Masculine)",
+#                    ],
+#                    ["봄"],
+#                    # on_change=st.rerun,
+#                    max_selections=2,
+#                    placeholder="향수의 느낌을 선택해주세요",
+#                    label_visibility="hidden",
+#                )
+#
+#            else:
+#                st.multiselect(
+#                    "어떤 향을 원하시나요?",
+#                    [
+#                        st.session_state.selected_values["season"],
+#                        st.session_state.selected_values["audience"],
+#                        st.session_state.selected_values["occasion"],
+#                        "Sweet",
+#                        "Spicy",
+#                        "Oriental",
+#                        "Powdery",
+#                        "Woody",
+#                        "Gourmand",
+#                        "Fresh",
+#                        "Synthetic",
+#                        "Green",
+#                        "Aquatic",
+#                        "Citrus",
+#                        "Creamy",
+#                        "Fruity",
+#                        "Floral",
+#                        "Smoky",
+#                        "Resinous",
+#                        "Leathery",
+#                        "Earthy",
+#                        "Chypre",
+#                        "Animal",
+#                        "Fougère",
+#                    ],
+#                    [
+#                        st.session_state.selected_values["season"],
+#                        st.session_state.selected_values["audience"],
+#                        st.session_state.selected_values["occasion"],
+#                        st.session_state.selected_values["accord"][0],
+#                        st.session_state.selected_values["accord"][1],
+#                    ],
+#                    placeholder="원하는 향을 선택해주세요",
+#                    label_visibility="hidden",
+#                )
+#
 
 # 이전 결과 보기 버튼 추가

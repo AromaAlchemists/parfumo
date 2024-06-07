@@ -1,96 +1,66 @@
+import os
+from sqlalchemy import create_engine
 import pandas as pd
 
 
-# sample code for test
-def get_data(recommendations):
-    sample_data = [
-        {
-            "perfume_name": "Gentleman Givenchy Réserve Privée",
-            "year": 2022,
-            "brand": "Givenchy",
-            "image_url": "https://pimages.parfumo.de/480/158077_img-4050-givenchy-gentleman-givenchy-eau-de-parfum-reserve-privee_480.jpg",
-            "notes_top": ["Italian bergamot"],
-            "notes_heart": ["Chestnut", "Benzoin Siam"],
-            "notes_base": ["Virginia cedar", "Haitian vetiver", "Indonesian patchouli"],
-            "rating": 8.1,
-            "link": "https://www.parfumo.net/Perfumes/Givenchy/gentleman-givenchy-reserve-privee",
-        },
-        {
-            "perfume_name": "City of Stars",
-            "year": 2022,
-            "brand": "Louis Vuitton",
-            "image_url": "https://pimages.parfumo.de/480/167670_img-2443-louis-vuitton-city-of-stars_480.jpg",
-            "notes_top": [],
-            "notes_heart": [],
-            "notes_base": [
-                "Blood orange",
-                "Lemon",
-                "Red mandarin orange",
-                "Bergamot",
-                "Lime",
-                "Tiaré",
-                "Sandalwood",
-                "Musk",
-            ],
-            "rating": 7.2,
-            "link": "https://www.parfumo.net/Perfumes/Louis_Vuitton/city-of-stars",
-        },
-        {
-            "perfume_name": "Acqua di Giò pour Homme Eau de Parfum",
-            "year": 2022,
-            "brand": "Giorgio Armani",
-            "image_url": "https://pimages.parfumo.de/480/160300_img-8398-giorgio-armani-acqua-di-gio-pour-homme-eau-de-parfum_480.jpg",
-            "notes_top": ["Italian green mandarin orange", "Marine notes"],
-            "notes_heart": [
-                "Provençal clary sage",
-                "Provençal lavender",
-                "Madagascan geranium",
-            ],
-            "notes_base": ["Guatemala patchouly", "Haitian vetiver"],
-            "rating": 7.2,
-            "link": "https://www.parfumo.net/Perfumes/Giorgio_Armani/acqua-di-gio-pour-homme-eau-de-parfum",
-        },
-        {
-            "perfume_name": "Apex",
-            "year": 2022,
-            "brand": "Roja Parfums",
-            "image_url": "https://pimages.parfumo.de/480/165208_img-6247-roja-parfums-apex_480.jpg",
-            "notes_top": ["Lemon", "Bergamot", "Mandarin orange", "Orange"],
-            "notes_heart": ["Jasmine", "Cistus", "Pineapple"],
-            "notes_base": [
-                "Galbanum",
-                "Elemi resin",
-                "Patchouli",
-                "Oakmoss",
-                "Rum",
-                "Tobacco",
-                "Cypress",
-                "Fir balsam",
-                "Juniper berry",
-                "Cashmere wood",
-                "Sandalwood",
-                "Benzoin",
-                "Amber",
-                "Frankincense",
-                "Labdanum",
-                "Leather",
-                "Ambergris",
-                "Musk",
-            ],
-            "rating": 7.0,
-            "link": "https://www.parfumo.net/Perfumes/Roja_Parfums/apex",
-        },
-        {
-            "perfume_name": "Terre d'Hermès Eau Givrée",
-            "year": 2022,
-            "brand": "Hermès",
-            "image_url": "https://pimages.parfumo.de/480/164275_img-5053-hermes-terre-d-hermes-eau-givree_480.jpg",
-            "notes_top": [],
-            "notes_heart": [],
-            "notes_base": ["Citron", "Juniper berry", "Nepalese Sichuan pepper"],
-            "rating": 7.5,
-            "link": "https://www.parfumo.net/Perfumes/Hermes/terre-d-hermes-eau-givree",
-        },
-    ]
+# ** 환경 변수에서 DB 접속 정보 읽기 ()
+# USER = os.getenv("USER")
+# PASSWORD = os.getenv("PASSWORD")
+# HOST = os.getenv("HOST")
+# DB = os.getenv("DB")
+USER = "admin"
+PASSWORD = "Qkrwodnr12!"
+HOST = "parfumo.cl2402usashg.ap-northeast-2.rds.amazonaws.com"
+DB = "parfumo"
 
-    return sample_data
+
+# **
+def accord_search(user_accord_list):
+    engine_url = f"mysql+mysqlconnector://{USER}:{PASSWORD}@{HOST}/{DB}"
+
+    # SQLAlchemy 엔진 생성
+    engine = create_engine(engine_url)
+
+    # SQL 쿼리를 사용하여 데이터를 DataFrame으로 읽어옴
+    query = f"""
+            SELECT DISTINCT a.perfume_id, p.perfume
+            FROM accord a
+            JOIN perfume p ON a.perfume_id = p.perfume_id
+            WHERE a.name IN {tuple(user_accord_list)} and p.rating is not null
+            order by rating desc;
+            """
+    df = pd.read_sql_query(query, con=engine)
+    filtered_accord_perfume_id = list(df["perfume_id"])
+    return filtered_accord_perfume_id
+
+
+# **
+def get_table_from_db(table):
+    engine_url = f"mysql+mysqlconnector://{USER}:{PASSWORD}@{HOST}/{DB}"
+
+    # SQLAlchemy 엔진 생성
+    engine = create_engine(engine_url)
+
+    # SQL 쿼리를 사용하여 데이터를 DataFrame으로 읽어옴
+    query = f"""
+            select * from {table}
+            """
+    df = pd.read_sql_query(query, con=engine).drop_duplicates()
+    return df
+
+
+# **
+def get_recommand_perfume_info(recommand_perfume_list):
+    engine_url = f"mysql+mysqlconnector://{USER}:{PASSWORD}@{HOST}/{DB}"
+
+    # SQLAlchemy 엔진 생성
+    engine = create_engine(engine_url)
+
+    # SQL 쿼리를 사용하여 데이터를 DataFrame으로 읽어옴
+    query = f"""
+                select *
+                from perfume p 
+                where p.perfume in {tuple(recommand_perfume_list)};
+            """
+    recommand_perfume_info = pd.read_sql_query(query, con=engine)
+    return recommand_perfume_info

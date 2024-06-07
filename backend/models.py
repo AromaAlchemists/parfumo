@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 # define data model
 class Preferences(BaseModel):
+    accord: list
     audience: list
     season: list
     occasion: list
@@ -10,4 +11,4 @@ class Preferences(BaseModel):
 
 
 class Chat(BaseModel):
-    chat: str
+    text: str

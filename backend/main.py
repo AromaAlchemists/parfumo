@@ -1,9 +1,8 @@
 from fastapi import FastAPI, HTTPException
-import pandas as pd
 from contextlib import asynccontextmanager
 from models import Preferences, Chat
-from database import get_data
-from recsys import do_scoring_and_rag, do_rag
+from database import get_recommand_perfume_info
+from recsys import quick_recommendation, chat_recommendation
 
 
 # lifespan handler for graceful shutdown
@@ -35,15 +34,15 @@ async def quick_recommend(prefinput: Preferences):
     prefinput.occasion = scale_to_one(prefinput.occasion)
 
     try:
-        recommendations = do_scoring_and_rag(prefinput)
+        # **유저 입력에 대해 RecSys-quick_recommendation 호출
+        recommendations = quick_recommendation(prefinput)
 
         # error handling - no result from RecSys
         if not recommendations:
             raise HTTPException(status_code=404, detail="No perfumes found")
 
-        sample_data = get_data(recommendations)
-
-        return sample_data
+        # **결과 향수 목록에 대해 DB에서 정보 가져오기
+        return get_recommand_perfume_info(recommendations)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
@@ -53,15 +52,14 @@ async def quick_recommend(prefinput: Preferences):
 @app.post("/chat-recommendation")
 async def chat_recommend(chatinput: Chat):
     try:
-        recommendations = do_rag(chatinput)
+        recommendations = chat_recommendation(chatinput)
 
         # error handling - no result from RecSys
         if not recommendations:
             raise HTTPException(status_code=404, detail="No perfumes found")
 
-        sample_data = get_data(recommendations)
-
-        return sample_data
+        # **결과 향수 목록에 대해 DB에서 정보 가져오기
+        return get_recommand_perfume_info(recommendations)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
