@@ -68,7 +68,7 @@ async def chat_recommend(chatinput: Chat):
             raise HTTPException(status_code=404, detail="No perfumes found")
 
         # **결과 향수 목록에 대해 DB에서 정보 가져오기
-        return get_recommand_perfume_info(recommendations)
+        return get_recommend_perfume_info(recommendations)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
