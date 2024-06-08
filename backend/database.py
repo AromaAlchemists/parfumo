@@ -3,18 +3,13 @@ from sqlalchemy import create_engine
 import pandas as pd
 
 
-# ** 환경 변수에서 DB 접속 정보 읽기 ()
-# USER = os.getenv("USER")
-# PASSWORD = os.getenv("PASSWORD")
-# HOST = os.getenv("HOST")
-# DB = os.getenv("DB")
-USER = ""
-PASSWORD = ""
-HOST = ""
-DB = ""
+# 환경 변수에서 DB 접속 정보 읽기
+USER = os.getenv("USER")
+PASSWORD = os.getenv("PASSWORD")
+HOST = os.getenv("HOST")
+DB = os.getenv("DB")
 
 
-# **
 def accord_search(user_accord_list):
     engine_url = f"mysql+mysqlconnector://{USER}:{PASSWORD}@{HOST}/{DB}"
 
@@ -34,7 +29,6 @@ def accord_search(user_accord_list):
     return filtered_accord_perfume_id
 
 
-# **
 def get_table_from_db(table):
     engine_url = f"mysql+mysqlconnector://{USER}:{PASSWORD}@{HOST}/{DB}"
 
@@ -49,7 +43,6 @@ def get_table_from_db(table):
     return df
 
 
-# **
 def get_recommand_perfume_info(recommand_perfume_list):
     engine_url = f"mysql+mysqlconnector://{USER}:{PASSWORD}@{HOST}/{DB}"
 
