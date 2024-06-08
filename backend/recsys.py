@@ -6,26 +6,20 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
-
 from langchain_community.vectorstores import Chroma
 import chromadb
 from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
-
-# from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain.chat_models import ChatOpenAI
-from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from langchain.chains.question_answering import load_qa_chain
 from langchain.chains import RetrievalQA
 from langchain.llms import OpenAI
 from langchain.chains import retrieval_qa
 
-# DB_PATH = "../../"
-DB_PATH = r""
-api_key = ""
-# **user_input = [0.8, 0.2, 0, 0, 0, 0.3, 0.7, 0, 0, 0, 0, 0.6, 0.2, 0.2]
+
+api_key = os.getenv("OPENAI_API_KEY")
 
 
-# **
 def calculate_score2(vector, preference, count):
     preference = np.array(preference).reshape(1, -1)
     similarity = cosine_similarity(preference, vector)
@@ -39,13 +33,9 @@ def calculate_score2(vector, preference, count):
     return score
 
 
-# **
 def scoring_function(user_input, filtered_accord_perfume_id, k):
     scores = []
     result = {}
-
-    # **
-    user_input = [1.0, 0, 0, 0, 0, 0.5, 0.5, 0, 0, 0, 0, 0.5, 0.25, 0.25]
 
     chart_df = get_table_from_db("chart")
     chart_feature_df = get_table_from_db("chart_feature")
@@ -108,23 +98,22 @@ def scoring_function(user_input, filtered_accord_perfume_id, k):
     return keys
 
 
-# **
 def rag_with_filtered_list(filterd_perfume_id_list, query, DB_PATH):
-    # **
-    query = "recommend the perfume with woody, cinnamon scent and also good to give a present to my girlfriend"
-
     embeddings = OpenAIEmbeddings(openai_api_key=api_key)
+    print("==== pass RAG - 1")
     # 필터링 DB 생성
     embedding_function = OpenAIEmbeddingFunction(api_key=api_key)
     client = chromadb.PersistentClient(path=DB_PATH)
     collection_perfume = client.get_collection(name="perfume_review_with_description")
 
+    print("==== pass RAG - 2")
     collection_perfume_filtered = client.get_or_create_collection(
         name="perfume_review_with_description_filtered",
         embedding_function=embedding_function,
         metadata={"hnsw:space": "cosine"},
     )
 
+    print("==== pass RAG - 3")
     # 기존 DB에서 입력받은 list 내 향수들만 따로 저장
     for perfume_id in filterd_perfume_id_list:
         try:
@@ -206,9 +195,7 @@ def FSRAG(prefinput: Preferences):
     user_input = prefinput.audience + prefinput.season + prefinput.occasion
 
     # (1) 입력된 accord에 대해 filtering
-    # filtered_perfumeID_by_accord = accord_search(prefinput.accord)
-    # **
-    filtered_perfumeID_by_accord = accord_search(["Floral", "Fresh"])
+    filtered_perfumeID_by_accord = accord_search(prefinput.accord)
 
     # (2) 입력된 audience, season, occasion에 대해 scoring
     filtered_perfumeID_by_scoring = scoring_function(
@@ -216,8 +203,7 @@ def FSRAG(prefinput: Preferences):
     )
 
     # (3) filtering된 목록에 대해 RAG 수행
-    # DB_PATH = "./"
-    # query = "recommend the perfume with woody, cinnamon scent and also good to give a present to my girlfriend"
+    DB_PATH = "/home/ubuntu/vectorDB/"
     recommendations = rag_with_filtered_list(
         filtered_perfumeID_by_scoring, prefinput.text, DB_PATH
     )

@@ -4,14 +4,10 @@ import pandas as pd
 
 
 # ** 환경 변수에서 DB 접속 정보 읽기 ()
-# USER = os.getenv("USER")
-# PASSWORD = os.getenv("PASSWORD")
-# HOST = os.getenv("HOST")
-# DB = os.getenv("DB")
-USER = ""
-PASSWORD = ""
-HOST = ""
-DB = ""
+USER = os.getenv("USER")
+PASSWORD = os.getenv("PASSWORD")
+HOST = os.getenv("HOST")
+DB = os.getenv("DB")
 
 
 # **
@@ -30,7 +26,7 @@ def accord_search(user_accord_list):
             order by rating desc;
             """
     df = pd.read_sql_query(query, con=engine)
-    filtered_accord_perfume_id = list(df["perfume_id"])[:200]  # **
+    filtered_accord_perfume_id = list(df["perfume_id"])[:100]  # **
     return filtered_accord_perfume_id
 
 
@@ -62,7 +58,12 @@ def get_recommand_perfume_info(recommand_perfume_list):
                 from perfume p 
                 where p.perfume_id in {tuple(recommand_perfume_list)};
             """
-    recommend_perfume_info = pd.read_sql_query(query, con=engine)
+    df = pd.read_sql_query(query, con=engine)
+
+    df = df[['perfume_name', 'released_year', 'brand', 'description', 'img_url', 'rating', 'url']]
+    
+    recommand_perfume_info = df.drop_duplicates(drop=True)
+
 
     # 데이터프레임이 올바르게 생성되었는지 확인
     if recommend_perfume_info.empty:
