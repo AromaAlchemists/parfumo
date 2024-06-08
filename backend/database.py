@@ -59,7 +59,7 @@ def get_recommend_perfume_info(recommand_perfume_list):
 
     df = df[
         [
-            "perfume_name",
+            "perfume",
             "released_year",
             "brand",
             "description",
@@ -69,7 +69,7 @@ def get_recommend_perfume_info(recommand_perfume_list):
         ]
     ]
 
-    recommend_perfume_info = df.drop_duplicates(drop=True)
+    recommend_perfume_info = df.drop_duplicates()
 
     # 데이터프레임이 올바르게 생성되었는지 확인
     if recommend_perfume_info.empty:
