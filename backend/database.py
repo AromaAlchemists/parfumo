@@ -8,10 +8,10 @@ import pandas as pd
 # PASSWORD = os.getenv("PASSWORD")
 # HOST = os.getenv("HOST")
 # DB = os.getenv("DB")
-USER = "admin"
-PASSWORD = "Qkrwodnr12!"
-HOST = "parfumo.cl2402usashg.ap-northeast-2.rds.amazonaws.com"
-DB = "parfumo"
+USER = ""
+PASSWORD = ""
+HOST = ""
+DB = ""
 
 
 # **
@@ -30,7 +30,7 @@ def accord_search(user_accord_list):
             order by rating desc;
             """
     df = pd.read_sql_query(query, con=engine)
-    filtered_accord_perfume_id = list(df["perfume_id"])
+    filtered_accord_perfume_id = list(df["perfume_id"])[:200]  # **
     return filtered_accord_perfume_id
 
 
@@ -60,7 +60,18 @@ def get_recommand_perfume_info(recommand_perfume_list):
     query = f"""
                 select *
                 from perfume p 
-                where p.perfume in {tuple(recommand_perfume_list)};
+                where p.perfume_id in {tuple(recommand_perfume_list)};
             """
-    recommand_perfume_info = pd.read_sql_query(query, con=engine)
-    return recommand_perfume_info
+    recommend_perfume_info = pd.read_sql_query(query, con=engine)
+
+    # 데이터프레임이 올바르게 생성되었는지 확인
+    if recommend_perfume_info.empty:
+        raise ValueError("No data found for the given perfume IDs.")
+
+    # 데이터 타입 확인
+    print(recommend_perfume_info.dtypes)
+
+    # img_url 타입 object -> string으로 변환
+    recommend_perfume_info = recommend_perfume_info.astype({"img_url": "str"})
+
+    return recommend_perfume_info

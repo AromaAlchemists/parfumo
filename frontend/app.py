@@ -356,17 +356,21 @@ if not st.session_state.flag:
 else:
     st.subheader("Recommendation Result:")
     for perfume in st.session_state.recommendation:
-        name = perfume["perfume_name"]
-        year = perfume["year"]
+        name = perfume["perfume"]
+        year = perfume["released_year"]
         brand = perfume["brand"]
-        image_url = perfume["image_url"]
+        description = perfume["description"]
+        image_url = perfume["img_url"]
         rating = perfume["rating"]
-        link = perfume["link"]
+        link = perfume["url"]
+        # perfume["gender"]
+        # perfume["perfumer"]
         with st.container(height=None, border=True):
             col1, col2 = st.columns([0.7, 0.3])
             with col1:
                 st.markdown(f"🧴 **{name}** ({year}) from {brand}")
                 st.markdown(f"rating: *{rating}*")
+                st.markdown(f"{description}...")
                 st.link_button("Link", link, help="more info at www.parfumo.com")
             with col2:
                 st.image(image_url, width=150)

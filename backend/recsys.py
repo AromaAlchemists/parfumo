@@ -6,27 +6,22 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
+
+from langchain_community.vectorstores import Chroma
 import chromadb
 from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
 
-# from langchain.embeddings.openai import OpenAIEmbeddings
-
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-
-from langchain_community.vectorstores import Chroma
-
-# from langchain.vectorstores import Chroma
-
-# from langchain.chat_models import ChatOpenAI
+# from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from langchain.chat_models import ChatOpenAI
+from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.chains.question_answering import load_qa_chain
 from langchain.chains import RetrievalQA
-from langchain_text_splitters import CharacterTextSplitter
-
-import logging
+from langchain.llms import OpenAI
+from langchain.chains import retrieval_qa
 
 # DB_PATH = "../../"
 DB_PATH = r""
-
+api_key = ""
 # **user_input = [0.8, 0.2, 0, 0, 0, 0.3, 0.7, 0, 0, 0, 0, 0.6, 0.2, 0.2]
 
 
@@ -48,7 +43,10 @@ def calculate_score2(vector, preference, count):
 def scoring_function(user_input, filtered_accord_perfume_id, k):
     scores = []
     result = {}
-    user_input = [0.8, 0.2, 0, 0, 0, 0.3, 0.7, 0, 0, 0, 0, 0.6, 0.2, 0.2]
+
+    # **
+    user_input = [1.0, 0, 0, 0, 0, 0.5, 0.5, 0, 0, 0, 0, 0.5, 0.25, 0.25]
+
     chart_df = get_table_from_db("chart")
     chart_feature_df = get_table_from_db("chart_feature")
 
@@ -111,14 +109,15 @@ def scoring_function(user_input, filtered_accord_perfume_id, k):
 
 
 # **
-def rag_with_filtered_list(filterd_perfume_list, query, DB_PATH):
-    # api_key = os.getenv("OPENAI_API_KEY")
-    api_key = "sk-"
+def rag_with_filtered_list(filterd_perfume_id_list, query, DB_PATH):
+    # **
+    query = "recommend the perfume with woody, cinnamon scent and also good to give a present to my girlfriend"
 
     embeddings = OpenAIEmbeddings(openai_api_key=api_key)
     # 필터링 DB 생성
     embedding_function = OpenAIEmbeddingFunction(api_key=api_key)
     client = chromadb.PersistentClient(path=DB_PATH)
+    collection_perfume = client.get_collection(name="perfume_review_with_description")
 
     collection_perfume_filtered = client.get_or_create_collection(
         name="perfume_review_with_description_filtered",
@@ -126,37 +125,32 @@ def rag_with_filtered_list(filterd_perfume_list, query, DB_PATH):
         metadata={"hnsw:space": "cosine"},
     )
 
-    collection_perfume = client.get_collection(name="perfume_review_with_description")
-
     # 기존 DB에서 입력받은 list 내 향수들만 따로 저장
-    for perfume_name in filterd_perfume_list:
+    for perfume_id in filterd_perfume_id_list:
         try:
             collection_perfume_filtered_ = collection_perfume.get(
-                where={"perfume": "{}".format(perfume_name)}
+                where={"perfume_id": "{}".format(perfume_id)}
             )
 
-            if not collection_perfume_filtered_["documents"]:
-                logging.warning(f"No documents found for perfume: {perfume_name}")
+            # 데이터 유효성 검사
+            documents = collection_perfume_filtered_["documents"]
+            metadatas = collection_perfume_filtered_["metadatas"]
+            ids = collection_perfume_filtered_["ids"]
+
+            if not documents or not metadatas or not ids:
+                print(
+                    f"Invalid data for perfume_id {perfume_id}: {collection_perfume_filtered_}"
+                )
                 continue
 
             collection_perfume_filtered.add(
-                documents=collection_perfume_filtered_["documents"],
-                metadatas=collection_perfume_filtered_["metadatas"],
-                ids=collection_perfume_filtered_["ids"],
+                documents=documents,
+                metadatas=metadatas,
+                ids=ids,
             )
-
+            print(f"Successfully added data for perfume_id {perfume_id}")
         except Exception as e:
-            logging.error(
-                f"Error retrieving or adding perfume: {perfume_name}, {str(e)}"
-            )
-        # collection_perfume_filtered_ = collection_perfume.get(
-        #    where={"perfume": "{}".format(perfume_name)}
-        # )
-        # collection_perfume_filtered.add(
-        #    documents=collection_perfume_filtered_["documents"],
-        #    metadatas=collection_perfume_filtered_["metadatas"],
-        #    ids=collection_perfume_filtered_["ids"],
-        # )
+            print(f"Error adding perfume_id {perfume_id}: {e}")
 
     # Chroma Vector Store 설정
     vector_store = Chroma(
@@ -177,7 +171,6 @@ def rag_with_filtered_list(filterd_perfume_list, query, DB_PATH):
     # QA 체인 구성
     qa_chain = load_qa_chain(llm=llm, chain_type="stuff")
     # RetrievalQA 체인 구성
-    # retrieval_qa_chain = create_retrieval_chain(
     retrieval_qa_chain = RetrievalQA(
         retriever=vector_store.as_retriever(search_type="mmr", search_kwargs={"k": 3}),
         combine_documents_chain=qa_chain,
@@ -188,45 +181,49 @@ def rag_with_filtered_list(filterd_perfume_list, query, DB_PATH):
               If there no any exact answer about given question, you can infer with given document and answer by using it.
               Provide 3 answers. If an answer to the question is provided, it must be annotated with a citation.
               Use the following format for to cite relevant passages.
-              ({"perfume name": … ,"reason " : … , "citation" : …}). 
-              You recognize that the recommanded "perfume name" should not be same but always be different
+              ({"perfume id": … ,"reason " : … , "citation" : …}). 
+              You recognize that the recommanded "perfume id" should not be same but always be different
               Question : """
     question = prompt + query
     result = retrieval_qa_chain({"query": question})
     client.delete_collection(name="perfume_review_with_description_filtered")
     # print(f"Query: {question}")
     print(f"Answer: {result['result']}")
+
     # 필터링 DB 삭제
     result_list = []
-    print(result["result"])
-    find_perfume = re.findall(r'"perfume name": "([^"]+)"', result["result"])
+    pattern = r'"perfume id": (\d+)'
+    find_perfume = re.findall(pattern, result["result"])
     for name in find_perfume:
         # print(name)
-        result_list.append(name)
+        result_list.append(int(name))
 
     return result_list
 
 
 # **filtering + scoring + RAG
-def quick_recommendation(prefinput: Preferences):
+def FSRAG(prefinput: Preferences):
     user_input = prefinput.audience + prefinput.season + prefinput.occasion
 
     # (1) 입력된 accord에 대해 filtering
-    filtered_accord_perfume_id = accord_search(prefinput.accord)
+    # filtered_perfumeID_by_accord = accord_search(prefinput.accord)
+    # **
+    filtered_perfumeID_by_accord = accord_search(["Floral", "Fresh"])
 
     # (2) 입력된 audience, season, occasion에 대해 scoring
-    filtered_scoring_function_id = scoring_function(
-        user_input, filtered_accord_perfume_id, 30
+    filtered_perfumeID_by_scoring = scoring_function(
+        user_input, filtered_perfumeID_by_accord, 20
     )
 
     # (3) filtering된 목록에 대해 RAG 수행
     # DB_PATH = "./"
     # query = "recommend the perfume with woody, cinnamon scent and also good to give a present to my girlfriend"
     recommendations = rag_with_filtered_list(
-        filtered_scoring_function_id, prefinput.text, DB_PATH
+        filtered_perfumeID_by_scoring, prefinput.text, DB_PATH
     )
-    print(recommendations)
-    return {"recommendations": recommendations}
+
+    result = {"recommendations": recommendations}
+    return result
 
 
 def chat_recommendation(chatinput: Chat):

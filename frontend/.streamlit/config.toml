@@ -1,10 +1,16 @@
 [theme]
+primaryColor = '#006400'
+backgroundColor = '#F5FFFA'
+secondaryBackgroundColor = '#C1E1C1'
+textColor = '#333333'
+font = "sans serif"
 
-primaryColor = '#333333'
-backgroundColor = '#F5F5DC'
-secondaryBackgroundColor = '#E0E0C1'
-textColor = '#654321'
-font = "monospace"
+
+#primaryColor = '#333333'
+#backgroundColor = '#F5F5DC'
+#secondaryBackgroundColor = '#E0E0C1'
+#textColor = '#654321'
+#font = "monospace"
 
 
 # Primary accent for interactive elements
