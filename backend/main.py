@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.encoders import jsonable_encoder
 from contextlib import asynccontextmanager
 from models import Preferences, Chat
-from database import get_recommand_perfume_info
+from database import get_recommend_perfume_info
 from recsys import FSRAG, chat_recommendation
 
 
@@ -47,7 +47,7 @@ async def quick_recommend(prefinput: Preferences):
         recommendation_values = recommendations["recommendations"]
 
         # **결과 향수 목록에 대해 DB에서 정보 가져오기
-        result_df = get_recommand_perfume_info(recommendation_values)
+        result_df = get_recommend_perfume_info(recommendation_values)
 
         # Pandas DataFrame을 JSON으로 변환
         result_json = result_df.to_dict(orient="records")
