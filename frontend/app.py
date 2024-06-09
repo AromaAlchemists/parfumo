@@ -267,67 +267,61 @@ def warning():
 # @st.experimental_fragment
 def make_page():
     with st.container(height=400, border=False):
-        with st.spinner("가장 적합한 향수를 찾고 있어요..."):
-            if st.session_state.page == 0:
-                st.markdown("빠르고 쉽게 원하는 향수를 찾으실 수 있게 도와드립니다.")
-                st.markdown("추천은 아래와 같이 5단계에 걸쳐 진행됩니다.")
-                st.markdown("1. Accord - 선호하는 향 타입")
-                st.markdown("2. Season - 사용할 계절")
-                st.markdown("3. Audience - 향수의 느낌")
-                st.markdown("4. Occasion - 사용할 자리")
-                st.markdown("5. 추가 정보 입력")
-                st.markdown(
-                    "각 단계에서 해당 사항이 없으면 선택 없이 넘어가실 수 있지만, 추천을 위해서는 2/3/4 단계 중 최소 한 가지 항목의 선택이 필요합니다."
+        if st.session_state.page == 0:
+            st.markdown("빠르고 쉽게 원하는 향수를 찾으실 수 있게 도와드립니다.")
+            st.markdown("추천은 아래와 같이 5단계에 걸쳐 진행됩니다.")
+            st.markdown("1. Accord - 선호하는 향 타입")
+            st.markdown("2. Season - 사용할 계절")
+            st.markdown("3. Audience - 향수의 느낌")
+            st.markdown("4. Occasion - 사용할 자리")
+            st.markdown("5. 추가 정보 입력")
+            st.markdown(
+                "각 단계에서 해당 사항이 없으면 선택 없이 넘어가실 수 있지만, 추천을 위해서는 2/3/4 단계 중 최소 한 가지 항목의 선택이 필요합니다."
+            )
+        elif st.session_state.page == 1:
+            st.markdown("원하는 향을 선택해주세요.")
+            k = int(len(opt_accord) / 3)
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                for i in range(k):
+                    st.session_state.quick_accord[i] = st.checkbox(
+                        opt_accord[i], value=st.session_state.quick_accord[i]
+                    )
+            with col2:
+                for i in range(k, k * 2):
+                    st.session_state.quick_accord[i] = st.checkbox(
+                        opt_accord[i], value=st.session_state.quick_accord[i]
+                    )
+            with col3:
+                for i in range(k * 2, len(opt_accord)):
+                    st.session_state.quick_accord[i] = st.checkbox(
+                        opt_accord[i], value=st.session_state.quick_accord[i]
+                    )
+        elif st.session_state.page == 2:
+            st.markdown("사용하고 싶은 계절을 선택해주세요.")
+            for i in range(len(opt_season)):
+                st.session_state.quick_season[i] = st.checkbox(
+                    opt_season[i], value=st.session_state.quick_season[i]
                 )
-
-            elif st.session_state.page == 1:
-                st.markdown("원하는 향을 선택해주세요.")
-                k = int(len(opt_accord) / 3)
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    for i in range(k):
-                        st.session_state.quick_accord[i] = st.checkbox(
-                            opt_accord[i], value=st.session_state.quick_accord[i]
-                        )
-                with col2:
-                    for i in range(k, k * 2):
-                        st.session_state.quick_accord[i] = st.checkbox(
-                            opt_accord[i], value=st.session_state.quick_accord[i]
-                        )
-                with col3:
-                    for i in range(k * 2, len(opt_accord)):
-                        st.session_state.quick_accord[i] = st.checkbox(
-                            opt_accord[i], value=st.session_state.quick_accord[i]
-                        )
-
-            elif st.session_state.page == 2:
-                st.markdown("사용하고 싶은 계절을 선택해주세요.")
-                for i in range(len(opt_season)):
-                    st.session_state.quick_season[i] = st.checkbox(
-                        opt_season[i], value=st.session_state.quick_season[i]
-                    )
-
-            elif st.session_state.page == 3:
-                st.markdown("어떤 느낌을 원하시나요?")
-                for i in range(len(opt_audience)):
-                    st.session_state.quick_audience[i] = st.checkbox(
-                        opt_audience[i], value=st.session_state.quick_audience[i]
-                    )
-
-            elif st.session_state.page == 4:
-                st.markdown("어느 자리에서 사용하고 싶나요?")
-                for i in range(len(opt_occasion)):
-                    st.session_state.quick_occasion[i] = st.checkbox(
-                        opt_occasion[i], value=st.session_state.quick_occasion[i]
-                    )
-
-            elif st.session_state.page == 5:
-                st.markdown("추가로 원하시는 것을 자유롭게 입력해주세요.")
-                st.session_state.quick_text = st.text_area(
-                    label="quick_text",
-                    value=st.session_state.quick_text,
-                    label_visibility="collapsed",
+        elif st.session_state.page == 3:
+            st.markdown("어떤 느낌을 원하시나요?")
+            for i in range(len(opt_audience)):
+                st.session_state.quick_audience[i] = st.checkbox(
+                    opt_audience[i], value=st.session_state.quick_audience[i]
                 )
+        elif st.session_state.page == 4:
+            st.markdown("어느 자리에서 사용하고 싶나요?")
+            for i in range(len(opt_occasion)):
+                st.session_state.quick_occasion[i] = st.checkbox(
+                    opt_occasion[i], value=st.session_state.quick_occasion[i]
+                )
+        elif st.session_state.page == 5:
+            st.markdown("추가로 원하시는 것을 자유롭게 입력해주세요.")
+            st.session_state.quick_text = st.text_area(
+                label="quick_text",
+                value=st.session_state.quick_text,
+                label_visibility="collapsed",
+            )
 
     col1, col2, col3, col4, col5 = st.columns([0.15, 0.15, 0.4, 0.15, 0.15])
     col1.button(
@@ -584,18 +578,19 @@ elif st.session_state.flag == 1:
     )
     st.text("")
 
-    tab_quick, tab_chat = st.tabs(
-        ["⚡ Quick Recommendation", "💬 Recommendation by Chat"]
-    )
-    with tab_quick:
-        make_page()
-    with tab_chat:
-        st.markdown(
-            "채팅으로 자유롭게 찾고자 하는 향수에 대해 얘기해주시면, 사용 후기를 바탕으로 가장 적합한 향수를 추천해드릴게요!"
+    with st.spinner("가장 적합한 향수를 찾고 있어요..."):
+        tab_quick, tab_chat = st.tabs(
+            ["⚡ Quick Recommendation", "💬 Recommendation by Chat"]
         )
-        st.session_state.chat_text = st.chat_input("여기에 입력해주세요")
-        if st.session_state.chat_text:
-            get_chat_recommendation()
+        with tab_quick:
+            make_page()
+        with tab_chat:
+            st.markdown(
+                "채팅으로 자유롭게 찾고자 하는 향수에 대해 얘기해주시면, 사용 후기를 바탕으로 가장 적합한 향수를 추천해드릴게요!"
+            )
+            st.session_state.chat_text = st.chat_input("여기에 입력해주세요")
+            if st.session_state.chat_text:
+                get_chat_recommendation()
 
 
 # flag==2: 결과 화면
