@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.encoders import jsonable_encoder
 from contextlib import asynccontextmanager
 from models import Preferences, Chat
-from database import get_recommand_perfume_info
+from database import get_recommend_perfume_info
 from recsys import FSRAG, chat_recommendation
 
 
@@ -39,7 +39,7 @@ async def quick_recommend(prefinput: Preferences):
         recommendations = FSRAG(prefinput)
 
         # error handling - no result from RecSys
-        if not recommendations:
+        if not recommendations or not recommendations['recommendations']:
             raise HTTPException(status_code=404, detail="No perfumes found")
 
         print(recommendations)
@@ -47,10 +47,12 @@ async def quick_recommend(prefinput: Preferences):
         recommendation_values = recommendations["recommendations"]
 
         # **결과 향수 목록에 대해 DB에서 정보 가져오기
-        result_df = get_recommand_perfume_info(recommendation_values)
+        result_df = get_recommend_perfume_info(recommendation_values)
 
+        print("==== pass main_result_df")
         # Pandas DataFrame을 JSON으로 변환
         result_json = result_df.to_dict(orient="records")
+        print("==== pass main_result_json")
         return jsonable_encoder(result_json)
 
     except Exception as e:
@@ -75,6 +77,7 @@ async def chat_recommend(chatinput: Chat):
 
 
 if __name__ == "__main__":
+
     import uvicorn
 
     uvicorn.run(app, host="0.0.0.0", port=8000)

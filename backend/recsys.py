@@ -36,7 +36,8 @@ def calculate_score2(vector, preference, count):
 def scoring_function(user_input, filtered_accord_perfume_id, k):
     scores = []
     result = {}
-
+    
+    print(f"==== pass scoring -1: filtered ids={len(filtered_accord_perfume_id)}")
     chart_df = get_table_from_db("chart")
     chart_feature_df = get_table_from_db("chart_feature")
 
@@ -73,7 +74,7 @@ def scoring_function(user_input, filtered_accord_perfume_id, k):
         ).reshape(1, -1)
         occasion_vector = np.array(
             chart_feature_df[
-                (chart_feature_df["perfume_id"] == 1)
+                (chart_feature_df["perfume_id"] == i)
                 & (chart_feature_df["parent"] == "Occasion")
             ]["percentage"][:6]
         ).reshape(1, -1)
@@ -90,6 +91,7 @@ def scoring_function(user_input, filtered_accord_perfume_id, k):
         # print(score, type(score))
         result[str(i)] = score
 
+    print("==== pass scoring -2")
     sorted_result = sorted(result.items(), key=lambda x: x[1], reverse=True)
     # 상위 k개의 아이템 추출
     top_k = sorted_result[:k]

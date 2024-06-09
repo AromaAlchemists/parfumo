@@ -1,7 +1,7 @@
-.env
-.vscode/
+*.py
 /frontend/venv/
 /frontend/streamlit.log
 /backend/venv/
 /backend/__pycache__/
 /backend/uvicorn.log
+/backend/streamlit.log
