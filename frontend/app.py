@@ -372,78 +372,79 @@ if st.session_state.flag == 0:
     )
     st.text("")
 
-    with st.container(height=150, border=True):
-        if st.session_state.selected_values["cnt"]:
-            c0, c1, c2, c3, c4 = st.columns(5)
-            if st.session_state.selected_values["season"]:
-                c0.button(
-                    st.session_state.selected_values["season"],
-                    use_container_width=True,
-                    on_click=update_selected_values,
-                    args=(
-                        0,
+    with st.spinner("가장 적합한 향수를 찾고 있어요..."):
+        with st.container(height=150, border=True):
+            if st.session_state.selected_values["cnt"]:
+                c0, c1, c2, c3, c4 = st.columns(5)
+                if st.session_state.selected_values["season"]:
+                    c0.button(
                         st.session_state.selected_values["season"],
-                    ),
-                )
-            if st.session_state.selected_values["audience"]:
-                c1.button(
-                    st.session_state.selected_values["audience"],
-                    use_container_width=True,
-                    on_click=update_selected_values,
-                    args=(
-                        1,
+                        use_container_width=True,
+                        on_click=update_selected_values,
+                        args=(
+                            0,
+                            st.session_state.selected_values["season"],
+                        ),
+                    )
+                if st.session_state.selected_values["audience"]:
+                    c1.button(
                         st.session_state.selected_values["audience"],
-                    ),
-                )
-            if st.session_state.selected_values["occasion"]:
-                c2.button(
-                    st.session_state.selected_values["occasion"],
-                    use_container_width=True,
-                    on_click=update_selected_values,
-                    args=(
-                        2,
+                        use_container_width=True,
+                        on_click=update_selected_values,
+                        args=(
+                            1,
+                            st.session_state.selected_values["audience"],
+                        ),
+                    )
+                if st.session_state.selected_values["occasion"]:
+                    c2.button(
                         st.session_state.selected_values["occasion"],
-                    ),
-                )
-            if len(st.session_state.selected_values["accord"]) >= 1:
-                c3.button(
-                    st.session_state.selected_values["accord"][0],
-                    use_container_width=True,
-                    on_click=update_selected_values,
-                    args=(
-                        3,
+                        use_container_width=True,
+                        on_click=update_selected_values,
+                        args=(
+                            2,
+                            st.session_state.selected_values["occasion"],
+                        ),
+                    )
+                if len(st.session_state.selected_values["accord"]) >= 1:
+                    c3.button(
                         st.session_state.selected_values["accord"][0],
-                    ),
-                )
-            if len(st.session_state.selected_values["accord"]) >= 2:
-                c4.button(
-                    st.session_state.selected_values["accord"][1],
-                    use_container_width=True,
-                    on_click=update_selected_values,
-                    args=(
-                        3,
+                        use_container_width=True,
+                        on_click=update_selected_values,
+                        args=(
+                            3,
+                            st.session_state.selected_values["accord"][0],
+                        ),
+                    )
+                if len(st.session_state.selected_values["accord"]) >= 2:
+                    c4.button(
                         st.session_state.selected_values["accord"][1],
-                    ),
-                )
+                        use_container_width=True,
+                        on_click=update_selected_values,
+                        args=(
+                            3,
+                            st.session_state.selected_values["accord"][1],
+                        ),
+                    )
 
-        else:
-            st.markdown("원하는 향수 타입을 선택해주세요.")
-            st.markdown("계절과 느낌 선택에 따라 추천 조합을 제시해드립니다.")
-            st.markdown("더 자세한 선택을 원하시면 [상세선택]을 이용해주세요.")
+            else:
+                st.markdown("원하는 향수 타입을 선택해주세요.")
+                st.markdown("계절과 느낌 선택에 따라 추천 조합을 제시해드립니다.")
+                st.markdown("더 자세한 선택을 원하시면 [상세선택]을 이용해주세요.")
 
-    c0, c1, c2 = st.columns([0.7, 0.15, 0.15])
-    c1.button(
-        "상세선택",
-        use_container_width=True,
-        on_click=lambda: st.session_state.update(flag=1),
-    )
-    if c2.button("추천받기", use_container_width=True, type="primary"):
-        selec_to_quick()
+        c0, c1, c2 = st.columns([0.7, 0.15, 0.15])
+        c1.button(
+            "상세선택",
+            use_container_width=True,
+            on_click=lambda: st.session_state.update(flag=1),
+        )
+        if c2.button("추천받기", use_container_width=True, type="primary"):
+            selec_to_quick()
 
-        if check_input():
-            get_quick_recommendation()
-        else:
-            warning()
+            if check_input():
+                get_quick_recommendation()
+            else:
+                warning()
 
     with st.sidebar:
         if not st.session_state.selected_values["season"]:
